@@ -1,5 +1,5 @@
 clc; clear;
-% вправо время увеличивается
+% вправо время увеличивается asd
 % вниз класс увеличивается
 %% Params of Setki
 global Ds Dt s t alpha f gamma umin umax;
