@@ -6,8 +6,8 @@ global Ds Dt s t alpha f gamma umin umax;
 
 L = 7;
 T = 8;
-Ds = 0.1;
-Dt = 0.1;
+Ds = 0.01;
+Dt = 0.01;
 S_steps= L/Ds;
 T_steps = T/Dt;
 s=[1:S_steps+1];
@@ -17,8 +17,8 @@ alpha(s) = interp1(s(1:(S_steps/L):end),alpha(s(1:(S_steps/L):end)),s(1:end));
 gamma = (((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
 %f = @(time) (3-L)/6*(sin((time-1)*Dt)+5);
 f = @(time) 0;
-lambda1 = 0;
-lambda2 = 1 - lambda1;
+lambda1k = 0;
+lambda2k = 1 - lambda1k;
 phi = 1; % потенциально функция фи в 1 функционале
 p = 1; % коэффициент в 1 функционале
 %eps = 1/100;
@@ -38,7 +38,7 @@ end
 for i = s
     CorrectU(i, t) = interp1(t(1:(T_steps/T):end),CorrectU(i, t(1:(T_steps/T):end)),t(1:end));
 end
-CorrectU(s(:), t(:)) = zeros(size(s,2), size(t,2))
+CorrectU(s(:), t(:)) = zeros(size(s,2), size(t,2));
 CorrectX(s(1:(S_steps/L):end), 1) = [280026 118907 33972 10172 2456 993 483 3]';
 CorrectX(s, 1) = interp1(s(1:(S_steps/L):end),CorrectX(s(1:(S_steps/L):end), 1),s(1:end));
 
@@ -320,8 +320,8 @@ hold off;
 
 figure(1)
 hold on;
-lambda1 = 0;
-while (lambda1 <= 1)
+lambda1k = 0;
+while (lambda1k <= 1)
     k = 1;
     J2u = 1;
     uk = 5000*ones(size(s,2), size(t,2));
@@ -347,11 +347,18 @@ while (J2u > 10e-3) && (k < 1000) && (prev > 10e-3)
     end
     
     % Проекция
-    uk_ = projection(uk - beta * (lambda1 * J1_ + lambda2 * J2_));
+    uk_ = projection(uk - beta * (lambda1k * J1_ + lambda2k * J2_));
+    
+    delta = 0.01;
+    J2u = trapz((xu(s, end) - need_x(s)').^2)*Ds;
+    J1u = -p*trapz(trapz(phi*uk(s, t))*Ds)*Dt;
+    lambda1k_ = projectionlambda(lambda1k - delta * J1u)
+    lambda2k_ = projectionlambda(lambda2k - delta * J2u)
+    
     
     %% Подсчет основного шага
     % Прямая задача
-    xu = Boundary(CorrectX(s,1), uk);
+    xu = Boundary(CorrectX(s,1), uk_);
 
     % Обратная задача
     psiStartCondition = -2*(xu(s, end) - need_x(s)');
@@ -367,7 +374,14 @@ while (J2u > 10e-3) && (k < 1000) && (prev > 10e-3)
     end
     
     % Проекция
-    uk = projection(uk - beta * (lambda1 * J1_ + lambda2 * J2_));
+    uk = projection(uk_ - beta * (lambda1k_ * J1_ + lambda2k_ * J2_));
+    
+    delta = 0.01;
+    J2u = trapz((xu(s, end) - need_x(s)').^2)*Ds;
+    J1u = -p*trapz(trapz(phi*uk_(s, t))*Ds)*Dt;
+    lambda1k = (lambda1k - delta * J1u)
+    lambda2k = (lambda2k - delta * J2u)
+    
     
     %Вычисление решения
     xu = Boundary(CorrectX(s, 1), uk);
@@ -381,12 +395,12 @@ while (J2u > 10e-3) && (k < 1000) && (prev > 10e-3)
     uprev = uk;
 end
     figure(1)
-    if (lambda1 == 0)
+    if (lambda1k == 0)
         plot(J2u, J1u, 'ro', 'markers', 5);
-    elseif (lambda1 == 1)
+    elseif (lambda1k == 1)
         plot(J2u, J1u, 'yo', 'markers', 5);
     else
-        plot(J2u, J1u, 'o', 'markers', 5, 'Color', [0, lambda1, 0] );
+        plot(J2u, J1u, 'o', 'markers', 5, 'Color', [0, lambda1k, 0] );
     end
     figure
     hold on;
@@ -470,8 +484,8 @@ end
     xlabel('t')
     ylabel('u(0, t)')
     hold off;
-    lambda1 = lambda1+2;
-    lambda2 = 1 - lambda1;
+    lambda1k = lambda1k+2;
+    lambda2k = 1 - lambda1k;
 end
 xlabel('J2u');
 ylabel('-J1u');
