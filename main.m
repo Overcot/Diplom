@@ -351,7 +351,7 @@ while (J2u > 10e-3) && (k < 1000) && (prev > 10e-3)
     
     %% Подсчет основного шага
     % Прямая задача
-    xu = Boundary(CorrectX(s,1), uk);
+    xu = Boundary(CorrectX(s,1), uk_);
 
     % Обратная задача
     psiStartCondition = -2*(xu(s, end) - need_x(s)');
@@ -367,7 +367,7 @@ while (J2u > 10e-3) && (k < 1000) && (prev > 10e-3)
     end
     
     % Проекция
-    uk = projection(uk - beta * (lambda1 * J1_ + lambda2 * J2_));
+    uk = projection(uk_ - beta * (lambda1 * J1_ + lambda2 * J2_));
     
     %Вычисление решения
     xu = Boundary(CorrectX(s, 1), uk);
