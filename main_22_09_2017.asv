@@ -83,7 +83,7 @@ while (lambda1 <= 1)
     storedJ2u = [];
     storedPrev = [];
     
-    while (k < 1000000) && (prev > 10e-3) && (J2u > 10e-3)
+    while (k < 5) && (prev > 10e-3)
         %% First Step
         % Pryamaya zadacha
         xu = Boundary(CorrectX(s,1), uk);
@@ -115,7 +115,7 @@ while (lambda1 <= 1)
         J1_ = -p*phi*L*T;
         J2_ = psi;
 
-        beta = sqrt(Ds^2+Dt^2)/norm(J2_);
+        beta = k*sqrt(Ds^2+Dt^2)/norm(J2_);
         if beta < 0.1
             beta = 0.1;
         end
@@ -173,9 +173,6 @@ while (lambda1 <= 1)
     plotGraph(CorrectU(:,5*T_steps/T+1),uk(:,5*T_steps/T+1), {0:L}, 's', 'u(s, t=5)', folder_to_save);
     plotGraph(CorrectU(:,t(end)),uk(:,t(end)), {0:L}, 's', 'u(s, t=8)', folder_to_save);
     
-    save([pwd '/' folder_to_save '/storedJ1u.mat'], 'storedJ1u');
-    save([pwd '/' folder_to_save '/storedJ2u.mat'], 'storedJ2u');
-    save([pwd '/' folder_to_save '/storedPrev.mat'], 'storedPrev');
     lambda1 = lambda1+0.1;
     lambda2 = 1 - lambda1;
 end

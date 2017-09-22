@@ -1,5 +1,5 @@
-function [] = plotGraph(analytical, numerical, xFromTo, xmsg, ymsg)
-    figure
+function [] = plotGraph(analytical, numerical, xFromTo, xmsg, ymsg, dir)
+    figure('visible','off');
     hold on;
     plot(analytical,'-')
     plot(numerical,'--')
@@ -8,4 +8,6 @@ function [] = plotGraph(analytical, numerical, xFromTo, xmsg, ymsg)
     xlabel(xmsg)
     ylabel(ymsg)
     hold off;
+    saveas(gcf,[pwd '/' dir '/' ymsg '.png'],'png')
+    saveas(gcf,[pwd '/' dir '/' ymsg '.fig'],'fig')
 end
