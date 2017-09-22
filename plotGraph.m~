@@ -1,0 +1,11 @@
+function [] = plotGraph(analytical, numerical, xFromTo, xlabel, ylabel)
+    figure
+    hold on;
+    plot(analytical,'-')
+    plot(numerical,'--')
+    legend({'Analytical', 'Numerical'});
+    set(gca, 'XtickLabel', xFromTo);
+    xlabel('t')
+    ylabel('x(s=7, t)')
+    hold off;
+end
