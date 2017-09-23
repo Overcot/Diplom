@@ -5,8 +5,8 @@ global Ds Dt s t alpha f gamma umin umax;
 
 L = 7;
 T = 8;
-Ds = 0.1;
-Dt = 0.1;
+Ds = 0.01;
+Dt = 0.01;
 S_steps= L/Ds;
 T_steps = T/Dt;
 s=[1:S_steps+1];
@@ -176,7 +176,7 @@ while (lambda1 <= 1)
     save([pwd '/' folder_to_save '/storedJ1u.mat'], 'storedJ1u');
     save([pwd '/' folder_to_save '/storedJ2u.mat'], 'storedJ2u');
     save([pwd '/' folder_to_save '/storedPrev.mat'], 'storedPrev');
-    lambda1 = lambda1+0.1;
+    lambda1 = lambda1+0.5;
     lambda2 = 1 - lambda1;
 end
 hold off;
