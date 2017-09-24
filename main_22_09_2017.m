@@ -5,8 +5,8 @@ global Ds Dt s t alpha f gamma umin umax;
 
 L = 7;
 T = 8;
-Ds = 0.01;
-Dt = 0.01;
+Ds = 0.1;
+Dt = 0.1;
 S_steps= L/Ds;
 T_steps = T/Dt;
 s=[1:S_steps+1];
@@ -40,8 +40,6 @@ for i = s
     CorrectU(i, t) = interp1(t(1:(T_steps/T):end),CorrectU(i, t(1:(T_steps/T):end)),t(1:end));
 end
 
-CorrectU(s(:), t(:)) = zeros(size(s,2), size(t,2));
-
 CorrectX(s(:), t(:)) = zeros(size(s,2), size(t,2));
 x_input = [280026 558880 682092 670578 557756 537638 691972 753642 813983; 118907 55968 111702 136328 134027 111239 107457 138303 150629; 33972 40021 21307 42458 51348 50734 41526 41080 52499; 10172 14084 18868 10804 23676 28260 26195 23240 20628; 2456 5064 7454 11312 6161 14862 15329 15621 9938; 993 879 2141 3203 2933 3475 7971 7856 3524; 483 254 229 288 127 1590 1429 3760 986; 3 83 48 3 61 3 649 320 374];
 CorrectX(s(1:(S_steps/L):end), t(1:(T_steps/T):end)) = x_input;
@@ -68,9 +66,9 @@ J1uCorrect = -p*trapz(0:Dt:T, trapz(0:Ds:L, phi*CorrectU(s, t)));
 %% Optimization problem
 
 figure(1)
+hold on;
 xlabel('J2u')
 ylabel('J1u')
-hold on;
 lambda1 = 0;
 while (lambda1 <= 1)
     k = 1;
@@ -115,7 +113,7 @@ while (lambda1 <= 1)
         J1_ = -p*phi*L*T;
         J2_ = psi;
 
-        beta = sqrt(Ds^2+Dt^2)/norm(J2_);
+        beta = k*(Ds^2+Dt^2)/norm(J2_);
         if beta < 0.1
             beta = 0.1;
         end
@@ -148,7 +146,6 @@ while (lambda1 <= 1)
     end
     folder_to_save = num2str(lambda1);
     mkdir(folder_to_save);
-    
     plotGraph(CorrectX(1,:),xu(1,:), {0:T}, 't', 'x(s=0, t)', folder_to_save);
     plotGraph(CorrectX(1*S_steps/L+1,:),xu(1*S_steps/L+1,:), {0:T}, 't', 'x(s=1, t)', folder_to_save);
     plotGraph(CorrectX(2*S_steps/L+1,:),xu(2*S_steps/L+1,:), {0:T}, 't', 'x(s=2, t)', folder_to_save);
@@ -172,11 +169,10 @@ while (lambda1 <= 1)
     plotGraph(CorrectU(:,2*T_steps/T+1),uk(:,2*T_steps/T+1), {0:L}, 's', 'u(s, t=2)', folder_to_save);
     plotGraph(CorrectU(:,5*T_steps/T+1),uk(:,5*T_steps/T+1), {0:L}, 's', 'u(s, t=5)', folder_to_save);
     plotGraph(CorrectU(:,t(end)),uk(:,t(end)), {0:L}, 's', 'u(s, t=8)', folder_to_save);
-    
     save([pwd '/' folder_to_save '/storedJ1u.mat'], 'storedJ1u');
     save([pwd '/' folder_to_save '/storedJ2u.mat'], 'storedJ2u');
     save([pwd '/' folder_to_save '/storedPrev.mat'], 'storedPrev');
-    lambda1 = lambda1+0.5;
+    lambda1 = lambda1+0.1;
     lambda2 = 1 - lambda1;
 end
 hold off;
