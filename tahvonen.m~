@@ -1,13 +1,13 @@
 clc; clear;
 
 %% Params of Setki
-global Ds Dt s t alpha f gamma umin umax;
-folder_to_save = 'data_when_u=0(2)';
+global Ds Dt s t alpha f gamma;
+folder_to_save = 'tahvonen';
 
 L = 7;
 T = 8;
-Ds = 0.01;
-Dt = 0.01;
+Ds = 1;
+Dt = 1;
 S_steps= L/Ds;
 T_steps = T/Dt;
 s=[1:S_steps+1];
@@ -18,8 +18,7 @@ gamma = (((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
 
 f = @(time) 0;
 
-umax = 10000;
-umin = 0;
+
 %% Initialization
 
 CorrectU(s(:), t(:)) = zeros(size(s,2), size(t,2));
@@ -43,8 +42,16 @@ end
 for i = s
     CorrectX(i, t) = interp1(t(1:(T_steps/T):end),CorrectX(i, t(1:(T_steps/T):end)),t(1:end));
 end
-%% Iteration Scheme
-xu = Boundary(CorrectX(s,1), CorrectU);
+%% Tahnoven
+xu(s(:), t(:)) = zeros(size(s,2), size(t,2));
+u(s(:), t(:)) = zeros(size(s,2), size(t,2));
+xu(s, 1) = CorrectX(s, 1);
+for time=t(1:end - 1)
+    xu(1, time) = trapz(gamma(1:end).*xu(1:end, time))*Ds + f(time);
+    xu(s(2:end), time + 1) = alpha(s(2:end)-1)'.*xu(s(2:end)-1, time) - u(s(2:end)-1, time);
+end
+xu(1, end) = trapz(gamma(1:end).*xu(1:end, t(end)))*Ds + f(t(end));
+
     mkdir(folder_to_save); 
     plotGraph(CorrectX(1,:), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save);
     plotGraph(CorrectX(2*S_steps/L+1,:), xu(2*S_steps/L+1, :), {0:T}, 't', 'x(s=2, t)', folder_to_save);
