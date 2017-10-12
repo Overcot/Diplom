@@ -1,8 +1,9 @@
 clc; clear;
 
 %% Params of Setki
-global Ds Dt s t alpha f gamma;
-folder_to_save = 'tahvonen&ours(1 & 0.01)';
+global Ds Dt s t alpha f gamma precision;
+precision = 0.1;
+folder_to_save = ['tahvonen&ours(1 & ',num2str(precision), ')'];
 
 L = 7;
 T = 8;
@@ -45,8 +46,8 @@ xu(1, end) = trapz(gamma(1:end).*xu(1:end, t(end)))*Ds + f(t(end));
 
 %% Our model
 
-Ds = 0.01;
-Dt = 0.01;
+Ds = precision;
+Dt = precision;
 S_steps= L/Ds;
 T_steps = T/Dt;
 s=[1:S_steps+1];
@@ -78,12 +79,24 @@ xu2 = Boundary(CorrectX(s,1), CorrectU);
 
 %% Graphs
     mkdir(folder_to_save);
+    
 
-    plotGraph2(xu2(1, 1:T_steps/T:end), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save);
-    plotGraph2(xu2(2*S_steps/L+1, 1:T_steps/T:end), xu(2*S_steps_tahn/L+1, :), {0:T}, 't', 'x(s=2, t)', folder_to_save);
-    plotGraph2(xu2(5*S_steps/L+1, 1:T_steps/T:end), xu(5*S_steps_tahn/L+1, :), {0:T}, 't', 'x(s=5, t)', folder_to_save);
-    plotGraph2(xu2(end, 1:T_steps/T:end), xu(end, :), {0:T}, 't', 'x(s=7, t)', folder_to_save);
-    plotGraph2(xu2(1:S_steps/L:end,1), xu(:,1), {0:L}, 's', 'x(s, t=0)', folder_to_save);
-    plotGraph2(xu2(1:S_steps/L:end,2*T_steps/T+1), xu(:, 2*T_steps_tahn/T+1), {0:L}, 's', 'x(s, t=2)', folder_to_save);
-    plotGraph2(xu2(1:S_steps/L:end,5*T_steps/T+1), xu(:, 5*T_steps_tahn/T+1), {0:L}, 's', 'x(s, t=5)', folder_to_save);
-    plotGraph2(xu2(1:S_steps/L:end,end), xu(:,end), {0:L}, 's', 'x(s, t=8)', folder_to_save);
+temp = xu;
+xu = zeros(size(s,2), size(t,2));
+xu(s(1:(S_steps/L):end), t(1:(T_steps/T):end)) = temp;
+for j=t
+    xu(s, j) = interp1(s(1:(S_steps/L):end),xu(s(1:(S_steps/L):end), j),s(1:end));
+end
+for i = s
+    xu(i, t) = interp1(t(1:(T_steps/T):end),xu(i, t(1:(T_steps/T):end)),t(1:end));
+end
+
+    plotGraph2(xu2(1, :), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save);
+    plotGraph2(xu2(2*S_steps/L+1, :), xu(2*S_steps/L+1, :), {0:T}, 't', 'x(s=2, t)', folder_to_save);
+    plotGraph2(xu2(5*S_steps/L+1, :), xu(5*S_steps/L+1, :), {0:T}, 't', 'x(s=5, t)', folder_to_save);
+    plotGraph2(xu2(end, :), xu(end, :), {0:T}, 't', 'x(s=7, t)', folder_to_save);
+    plotGraph2(xu2(:,1), xu(:,1), {0:L}, 's', 'x(s, t=0)', folder_to_save);
+    plotGraph2(xu2(:,2*T_steps/T+1), xu(:, 2*T_steps/T+1), {0:L}, 's', 'x(s, t=2)', folder_to_save);
+    plotGraph2(xu2(:,5*T_steps/T+1), xu(:, 5*T_steps/T+1), {0:L}, 's', 'x(s, t=5)', folder_to_save);
+    plotGraph2(xu2(:,end), xu(:,end), {0:L}, 's', 'x(s, t=8)', folder_to_save);
+    
