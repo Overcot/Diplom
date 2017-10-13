@@ -2,7 +2,7 @@ clc; clear;
 
 %% Params of Setki
 global Ds Dt s t alpha f gamma precision;
-precision = 0.1;
+precision = 1;
 folder_to_save = ['tahvonen&ours(1 & ',num2str(precision), ')'];
 
 L = 7;
