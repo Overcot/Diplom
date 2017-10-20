@@ -2,9 +2,9 @@ clc; clear;
 
 %% Params of Setki
 global Ds Dt s t alpha f gamma precision;
-precision = 0.01;
+precision = 0.001;
 folder_to_save = ['tahvonen&ours(1 & ',num2str(precision), ')'];
-beta = 11.269799577200006;
+beta = 11.269799576773186;
 L = 7;
 T = 8;
 Ds = 1;
@@ -45,7 +45,10 @@ end
 xu(1, end) = trapz(gamma(1:end).*xu(1:end, t(end)))*Ds + f(t(end));
 
 %% Our model
-
+%beta = 11.269799576773186; %precision = 1
+%beta = 9.207024636678527; %precision = 0.1
+%beta = 9.190203289586552; %precision = 0.01
+beta = 9.190035386505700; %precision = 0.001
 Ds = precision;
 Dt = precision;
 S_steps= L/Ds;

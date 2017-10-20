@@ -2,13 +2,11 @@ clc; clear;
 
 %% Params of Setki
 global Ds Dt s t alpha f gamma precision;
-precision = 1;
-folder_to_save = ['tahvonen&ours(1 & ',num2str(precision), ')'];
 
 L = 7;
 T = 8;
-Ds = 1;
-Dt = 1;
+Ds = 0.001;
+Dt = 0.001;
 S_steps_tahn= L/Ds;
 T_steps_tahn = T/Dt;
 s=[1:S_steps_tahn+1];
@@ -32,8 +30,8 @@ for i = s
 end
 %% Tahnoven
 format long
-beta = 11.269799;
-while (abs(CorrectX(1,1) - beta*trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds) >= 10e-9)
+beta = 9.190035;
+while (abs(CorrectX(1,1) - beta*trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds) >= 10e-6)
     beta = beta + 10e-12;
     abs(CorrectX(1,1) - beta*trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds)
 end
