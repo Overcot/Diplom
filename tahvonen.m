@@ -2,9 +2,9 @@ clc; clear;
 
 %% Params of Setki
 global Ds Dt s t alpha f gamma precision;
-precision = 1;
+precision = 0.01;
 folder_to_save = ['tahvonen&ours(1 & ',num2str(precision), ')'];
-
+beta = 11.269799577200006;
 L = 7;
 T = 8;
 Ds = 1;
@@ -15,7 +15,7 @@ s=[1:S_steps_tahn+1];
 t=[1:T_steps_tahn+1];
 alpha(s(1:(S_steps_tahn/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
 alpha(s) = interp1(s(1:(S_steps_tahn/L):end),alpha(s(1:(S_steps_tahn/L):end)),s(1:end));
-gamma = (((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
+gamma = beta*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
 
 f = @(time) 0;
 
@@ -54,7 +54,7 @@ s=[1:S_steps+1];
 t=[1:T_steps+1];
 alpha(s(1:(S_steps/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
 alpha(s) = interp1(s(1:(S_steps/L):end),alpha(s(1:(S_steps/L):end)),s(1:end));
-gamma = (((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
+gamma = beta*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
 
 %%
 
@@ -78,7 +78,7 @@ xu2(s, 1) = CorrectX(s, 1);
 xu2 = Boundary(CorrectX(s,1), CorrectU);
 
 %% Graphs
-    mkdir(folder_to_save);
+ mkdir(folder_to_save);
     
 
 temp = xu;
