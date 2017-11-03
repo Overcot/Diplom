@@ -14,8 +14,9 @@ t=[1:T_steps+1];
 
 alpha(s(1:(S_steps/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
 alpha(s) = interp1(s(1:(S_steps/L):end),alpha(s(1:(S_steps/L):end)),s(1:end));
-
-gamma = (((s-1)*Ds).*(L-(s-1)*Ds)/L^2)'; %%?????
+beta_temp = 9.207024636678527;
+%beta_temp = 1;
+gamma = beta_temp*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)' %%?????
 
 f = @(time) 0;
 
@@ -65,7 +66,7 @@ end
 
 %% Iteration Scheme
 xu = Boundary(CorrectX(s,1), CorrectU);
-
+pause
 %% Init last column
 %need_x(s) = xu(s, end);
 
@@ -77,7 +78,7 @@ J2uCorrect = trapz(0:Ds:L, (xu(s, end) - need_x(s)').^2);
 J1uCorrect = -p*trapz(0:Dt:T, trapz(0:Ds:L, phi*CorrectU(s, t)));
 
 %% Optimization problem
-
+pause
 figure(1)
 hold on;
 xlabel('J2u')
@@ -138,8 +139,10 @@ while (lambda1 <= 1)
 
         k
 
-        J2u = trapz((xu(s, end) - need_x(s)').^2)*Ds
-        J1u = -p*trapz(trapz(phi*uk(s, t))*Ds)*Dt
+        J2u = trapz((xu(s, end) - need_x(s)').^2)*Ds;
+        J1u = -p*trapz(trapz(phi*uk(s, t))*Ds)*Dt;
+        abs(J2u - J2uCorrect)
+        abs(J1u - J1uCorrect)
         storedJ1u(end+1) = J1u;
         storedJ2u(end+1) = J2u;
         k = k+1;
@@ -159,6 +162,7 @@ while (lambda1 <= 1)
     end
     folder_to_save = num2str(lambda1);
     mkdir(folder_to_save);
+    %{
     plotGraph(CorrectX(1,:),xu(1,:), {0:T}, 't', 'x(s=0, t)', folder_to_save);
     plotGraph(CorrectX(1*S_steps/L+1,:),xu(1*S_steps/L+1,:), {0:T}, 't', 'x(s=1, t)', folder_to_save);
     plotGraph(CorrectX(2*S_steps/L+1,:),xu(2*S_steps/L+1,:), {0:T}, 't', 'x(s=2, t)', folder_to_save);
@@ -185,6 +189,7 @@ while (lambda1 <= 1)
     save([pwd '/' folder_to_save '/storedJ1u.mat'], 'storedJ1u');
     save([pwd '/' folder_to_save '/storedJ2u.mat'], 'storedJ2u');
     save([pwd '/' folder_to_save '/storedPrev.mat'], 'storedPrev');
+    %}
     lambda1 = lambda1+0.1;
     lambda2 = 1 - lambda1;
 end
