@@ -16,7 +16,7 @@ alpha(s(1:(S_steps/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
 alpha(s) = interp1(s(1:(S_steps/L):end),alpha(s(1:(S_steps/L):end)),s(1:end));
 beta_temp = 9.207024636678527;
 %beta_temp = 1;
-gamma = beta_temp*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)' %%?????
+gamma = beta_temp*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)' %?????
 
 f = @(time) 0;
 

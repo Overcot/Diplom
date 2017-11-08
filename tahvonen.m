@@ -3,6 +3,7 @@ clc; clear;
 %% Params of Setki
 global Ds Dt s t alpha f gamma precision;
 precision = 0.01;
+coeff = 1; % elena aleksandrova suggestion
 folder_to_save = ['tahvonen&ours(1 & ',num2str(precision), ')'];
 L = 7;
 T = 8;
@@ -14,7 +15,18 @@ s=[1:S_steps_tahn+1];
 t=[1:T_steps_tahn+1];
 alpha(s(1:(S_steps_tahn/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
 alpha(s) = interp1(s(1:(S_steps_tahn/L):end),alpha(s(1:(S_steps_tahn/L):end)),s(1:end));
-gamma = beta*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
+if precision == 1
+    beta = 11.269799576773186;
+elseif precision == 0.1
+    beta = 9.207024636678527;
+elseif precision == 0.01
+    beta = 9.190203289586552;
+else
+    %precision == 0.001
+    beta = 9.190035386505700;
+end
+
+gamma = coeff*beta*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
 
 f = @(time) 0;
 
@@ -44,10 +56,6 @@ end
 xu(1, end) = trapz(gamma(1:end).*xu(1:end, t(end)))*Ds + f(t(end));
 
 %% Our model
-%beta = 11.269799576773186; %precision = 1
-%beta = 9.207024636678527; %precision = 0.1
-beta = 9.190203289586552; %precision = 0.01
-%beta = 9.190035386505700; %precision = 0.001
 Ds = precision;
 Dt = precision;
 S_steps= L/Ds;
@@ -56,7 +64,7 @@ s=[1:S_steps+1];
 t=[1:T_steps+1];
 alpha(s(1:(S_steps/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
 alpha(s) = interp1(s(1:(S_steps/L):end),alpha(s(1:(S_steps/L):end)),s(1:end));
-gamma = beta*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
+gamma = coeff*beta*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
 
 %%
 
