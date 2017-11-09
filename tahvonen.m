@@ -13,6 +13,7 @@ S_steps_tahn= L/Ds;
 T_steps_tahn = T/Dt;
 s=[1:S_steps_tahn+1];
 t=[1:T_steps_tahn+1];
+
 alpha(s(1:(S_steps_tahn/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
 alpha(s) = interp1(s(1:(S_steps_tahn/L):end),alpha(s(1:(S_steps_tahn/L):end)),s(1:end));
 if precision == 1
@@ -85,7 +86,7 @@ xu2(s(:), t(:)) = zeros(size(s,2), size(t,2));
 u(s(:), t(:)) = zeros(size(s,2), size(t,2));
 xu2(s, 1) = CorrectX(s, 1);
 
-xu2 = Boundary(CorrectX(s,1), CorrectU);
+xu2 = Boundary(xu2(s,1), CorrectU);
 
 %% Graphs
  mkdir(folder_to_save);
