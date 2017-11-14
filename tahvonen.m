@@ -29,6 +29,7 @@ end
 
 gamma = coeff*beta*(((s-1)*Ds).*(L-(s-1)*Ds)/L^2)';
 
+
 f = @(time) 0;
 
 
