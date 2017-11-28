@@ -36,7 +36,7 @@ xu2(s(1:(S_steps/L):end-300), 1) = x_input(:,1);
 xu2(s, 1) = interp1(s(1:(S_steps/L):end),xu2(s(1:(S_steps/L):end), 1),s(1:end));
 u(s(:), t(:)) = zeros(size(s,2), size(t,2));
 
-
+size(xu2(1:end, 1))
 xu2 = Boundary(xu2(s, 1), CorrectU);
 
 %% Graphs
