@@ -28,12 +28,10 @@ end
 for i = s
     CorrectX(i, t) = interp1(t(1:(T_steps_tahn/T):end),CorrectX(i, t(1:(T_steps_tahn/T):end)),t(1:end));
 end
-%% Tahnoven
-format long
-beta = 9.190035;
-while (abs(CorrectX(1,1) - beta*trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds) >= 10e-6)
-    beta = beta + 10e-12;
-    abs(CorrectX(1,1) - beta*trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds)
-end
-beta
-CorrectX(1,1) - beta*trapz(gamma(1:end).*CorrectX(1:end, 1)*Ds)
+%% search for A
+format short
+trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds - CorrectX(1,1)
+1-trapz(gamma(1:end))*Ds
+a = (trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds - CorrectX(1,1))/(1-trapz(gamma(1:end))*Ds)
+
+

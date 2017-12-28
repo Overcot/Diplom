@@ -1,10 +1,10 @@
-function [] = plotGraph2(analytical, numerical, xFromTo, xmsg, ymsg, dir)
+function [] = plotGraph2(analytical, numerical, xFromTo, xmsg, ymsg, dir, legend1, legend2)
     global precision
     figure('visible','off');
     hold on;
     plot(analytical,'-')
     plot(numerical,'--')
-    legend({'Our Model', 'Tahvonen'});
+    legend({legend1, legend2});
     set(gca, 'XtickLabel', xFromTo);
     xlabel(xmsg)
     ylabel(ymsg)

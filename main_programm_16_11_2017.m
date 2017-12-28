@@ -4,6 +4,7 @@ clc; clear;
 global Ds Dt s t alpha f gamma umin umax;
 precision = 0.01;
 beta_for_gamma = 1;
+
 if precision == 1
     beta_for_gamma = 11.269799576773186;
 elseif precision == 0.1
@@ -63,6 +64,8 @@ x_input = [280026 558880 682092 670578 557756 537638 691972 753642 813983;
     3 83 48 3 61 3 649 320 374];
 CorrectX = input_data(x_input, S_steps, T_steps, L, T);
 
+%A = (trapz(gamma(1:end).*CorrectX(1:end, 1))*Ds - CorrectX(1,1))/(1-trapz(gamma(1:end))*Ds)
+%CorrectX(s,1) = CorrectX(s,1) + A;
 %% Iteration Scheme
 xu(s(:), t(:)) = zeros(size(s,2), size(t,2));
 xu = Boundary(CorrectX(s,1), CorrectU);
@@ -71,14 +74,14 @@ CorrectU(s(:), t(:)) = zeros(size(s,2), size(t,2));
 xu2(s(:),t(:)) = zeros(size(s,2), size(t,2));
 xu2 = Boundary(CorrectX(s,1), CorrectU);
     mkdir(folder_to_save);
-    plotGraph2(xu2(1, :), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save);
-    plotGraph2(xu2(2*S_steps/L+1, :), xu(2*S_steps/L+1, :), {0:T}, 't', 'x(s=2, t)', folder_to_save);
-    plotGraph2(xu2(5*S_steps/L+1, :), xu(5*S_steps/L+1, :), {0:T}, 't', 'x(s=5, t)', folder_to_save);
-    plotGraph2(xu2(end, :), xu(end, :), {0:T}, 't', 'x(s=7, t)', folder_to_save);
-    plotGraph2(xu2(:,1), xu(:,1), {0:L}, 's', 'x(s, t=0)', folder_to_save);
-    plotGraph2(xu2(:,2*T_steps/T+1), xu(:, 2*T_steps/T+1), {0:L}, 's', 'x(s, t=2)', folder_to_save);
-    plotGraph2(xu2(:,5*T_steps/T+1), xu(:, 5*T_steps/T+1), {0:L}, 's', 'x(s, t=5)', folder_to_save);
-    plotGraph2(xu2(:,end), xu(:,end), {0:L}, 's', 'x(s, t=8)', folder_to_save);
+    plotGraph2(xu2(1, :), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save, 'Zero control', 'Non zero control');
+    plotGraph2(xu2(2*S_steps/L+1, :), xu(2*S_steps/L+1, :), {0:T}, 't', 'x(s=2, t)', folder_to_save, 'Zero control', 'Non zero control');
+    plotGraph2(xu2(5*S_steps/L+1, :), xu(5*S_steps/L+1, :), {0:T}, 't', 'x(s=5, t)', folder_to_save, 'Zero control', 'Non zero control');
+    plotGraph2(xu2(end, :), xu(end, :), {0:T}, 't', 'x(s=7, t)', folder_to_save, 'Zero control', 'Non zero control');
+    plotGraph2(xu2(:,1), xu(:,1), {0:L}, 's', 'x(s, t=0)', folder_to_save, 'Zero control', 'Non zero control');
+    plotGraph2(xu2(:,2*T_steps/T+1), xu(:, 2*T_steps/T+1), {0:L}, 's', 'x(s, t=2)', folder_to_save, 'Zero control', 'Non zero control');
+    plotGraph2(xu2(:,5*T_steps/T+1), xu(:, 5*T_steps/T+1), {0:L}, 's', 'x(s, t=5)', folder_to_save, 'Zero control', 'Non zero control');
+    plotGraph2(xu2(:,end), xu(:,end), {0:L}, 's', 'x(s, t=8)', folder_to_save, 'Zero control', 'Non zero control');
 
 %{
 
