@@ -3,7 +3,7 @@ precision = 1;
 L = 5;
 T =1 ;
 Ds = precision;
-Dt = precision;
+Dt = 1;
 S_steps= L/Ds;
 T_steps = T/Dt;
 s=1:S_steps+1;
@@ -30,7 +30,7 @@ for time=t(1:end - 1)
     %x(1,time+1) = gamma(1:end)*x(1:end, time)*Ds;
 
     %считаем самую правую точку с помощью явного левого уголка
-    %x(s(end), time + 1) = x(s(end), time) - (Dt/Ds)*(x(s(end), time) - x(s(end)-1, time)) - Dt*(mu(s(end))'.*x(s(end), time) + u(s(end),time).*x(s(end), time));
+    x(s(end), time + 1) = x(s(end), time) - (Dt/Ds)*(x(s(end), time) - x(s(end)-1, time)) - Dt*(mu(s(end))'.*x(s(end), time) + u(s(end),time).*x(s(end), time));
     
     %Неявная схема(метод прогонки)
     %{
@@ -106,9 +106,9 @@ for time=t(1:end - 1)
             beta(class) = (Fij - A*beta(class-1))/(A*alpha(class-1)+B);
         end
     end
-    x(s(end), time + 1) = beta(s(end));
-    for class=s(end-1:-1:1)
-        x(class, time + 1) = beta(class) + alpha(class) * x(class + 1, time + 1)
+    x(s(end)-1, time + 1) = beta(s(end)-1);
+    for class=s(end-2:-1:2)
+        x(class, time + 1) = beta(class) + alpha(class) * x(class + 1, time + 1);
     end
 
     
@@ -123,5 +123,5 @@ for time=t(1:end - 1)
     
     
 end
-% x(1,t(end)) = gamma(1:end)*x(1:end, t(end))*Ds;
-%plot(x(1, t))
+ x(1,t(end)) = gamma(1:end)*x(1:end, t(end))*Ds;
+plot(x(1, t))
