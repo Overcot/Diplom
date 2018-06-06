@@ -1,3 +1,5 @@
+
+%{
 clear; clc
 precision = 0.1;
 L = 5;
@@ -14,13 +16,12 @@ x = zeros(size(s,2),size(t,2));
 x(s(1:end), 1) = 1;
 mu = 1/2;
 p(t(1:end)) = ((t-1)*Dt)./((t-1)*Dt+1);
+%}
+[x, L, T, Ds, Dt, S_steps, T_steps, s, t, gamma, mu, p] = startInit(0.1, 5, 100, 1/5, 1/2, , x0)
 
 for time=t(1:end - 1)
-    %% Trapz
-    x(1,time) = (p(time) + trapz(gamma*x(2:end, time)*Ds))/(1-gamma*Ds);
     
-    %% Simpsons
-    %x(1, time) = (p(time) + simps(gamma(2:end)'.*x(2:end, time)*Ds))/(1-gamma(1)*Ds);
+    x(1, time) = recruitmentFunction('Tahvonen', time, x, [Ds, Dt, gamma, p(time)]);
     
     %%
     %{
