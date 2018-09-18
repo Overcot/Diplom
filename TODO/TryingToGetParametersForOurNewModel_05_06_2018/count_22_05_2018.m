@@ -2,16 +2,16 @@ clear; clc;
 global recruitment ssb
 
 %% Import Data
-year = 2011
+year = 2010
 if (year == 2010)
-    recruitment = xlsread('SRdata_ICES','D2:D49')
-    ssb = xlsread('SRdata_ICES','C2:C49')
+    recruitment = xlsread('ourData2010&2011','D3:D49');
+    ssb = xlsread('ourData2010&2011','B4:B50');
 elseif (year == 2011)
-    recruitment = xlsread('SRdata_ICES','D2:D50')
-    ssb = xlsread('SRdata_ICES','C2:C50')
+    recruitment = xlsread('ourData2010&2011','H3:H50');
+    ssb = xlsread('ourData2010&2011','F4:F51');
 end
 
-init = [1000, 0];
+init = [3542, 3.462e-7];
 
 options = optimset('Display','iter','PlotFcns',@optimplotfval,'Tolx',1e-20,'TolFun',1e-20);
 [x, val, exitflag, output] = fminsearch(@recruitment_func, init,options);
@@ -21,8 +21,9 @@ x(2)
 %% Curve Fit
 xdata = ssb;
 ydata = log(recruitment);
-ricker(init, xdata);
-%%[x, resnorm] = lsqcurvefit(@ricker, init, xdata, ydata)
+optionslsqnonlin = optimoptions(@lsqnonlin,'Algorithm','levenberg-marquardt');
+[x, resnorm] = lsqnonlin(@ricker, init,[],[], options)
+[ricker(x), zeros(size(xdata,1),1)]
 
 %% Count AIC
 resnorm = 11.44

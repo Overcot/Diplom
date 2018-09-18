@@ -1,4 +1,4 @@
-function f = recruitment_func(ab, data)
+function f = recruitment_func(ab)
 global recruitment ssb
 f = 0;
 for t = 1:length(recruitment)
