@@ -1,10 +1,12 @@
 function f=AnnaModel(ab)
-global recruitment ssb
+global recruitment ssb maxSSB lowerSSB higherSSB
 f = 0;
 for t = 1:length(recruitment)
-    if ssb(t) > ab(3)
-        f = f + (log(recruitment(t)) - log(ssb(t)*exp(ab(1) - ab(2)*ssb(t)))  ).^2;
+    if ssb(t)/maxSSB > ab(3)
+        f = f + (log(recruitment(t)) - log(ssb(t)) - ab(1) + ab(2)*ssb(t) ).^2;
+        lowerSSB = lowerSSB + 1;
     else
-        f = f + (log(recruitment(t)) - log(ssb(t)*exp(ab(1) - ab(2)*ssb(t))*exp((ab(3)-ssb(t))) )  ).^2;
+        f = f + (log(recruitment(t)) - log(ssb(t)) - ab(1) + ab(2)*ssb(t) - (ssb(t)/maxSSB-ab(3)) ).^2;
+        higherSSB = higherSSB + 1;
     end
 end

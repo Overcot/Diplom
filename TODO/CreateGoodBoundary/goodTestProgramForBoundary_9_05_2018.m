@@ -1,29 +1,20 @@
-
-%{
-clear; clc
+clear; clc;
 precision = 0.1;
 L = 5;
 T = 100;
-Ds = precision;
-Dt = precision;
-S_steps= L/Ds;
-T_steps = T/Dt;
-s=1:S_steps+1;
-t=1:T_steps+1;
-%gamma(s(1:end)) = 1/L;
-gamma = 1/L;
-x = zeros(size(s,2),size(t,2));
-x(s(1:end), 1) = 1;
-mu = 1/2;
-p(t(1:end)) = ((t-1)*Dt)./((t-1)*Dt+1);
-%}
-[x, L, T, Ds, Dt, S_steps, T_steps, s, t, gamma, mu, p] = startInit(0.1, 5, 100, 1/5, 1/2, , x0)
+gammaValue = 1/L;
+muValue = 1/2;
+x0 = 1;
+
+%% Numerical Part
+[x, L, T, Ds, Dt, S_steps, T_steps, s, t, gamma, mu, p] = startInit(precision, L, T, gammaValue, muValue, x0)
 
 for time=t(1:end - 1)
     
     x(1, time) = recruitmentFunction('Tahvonen', time, x, [Ds, Dt, gamma, p(time)]);
     
     %%
+    %{
     %{
     for class=s(1:end-1)
         x(class, time+1) = x(class, time) - Dt*(mu(class)*x(class, time) + (x(class+1, time) - x(class, time))/Ds);
@@ -39,7 +30,8 @@ for time=t(1:end - 1)
         x(class, time+1) = x(class, time) - Dt*((x(class+1, time)-x(class-1, time))/(2*Ds) + mu(class)*x(class, time));
     end
     %}
-    %% Potatov
+    %}
+    %% Potapov
     for class = s(1:end-1)
         %(x(class+1, time+1) - x(class, time))/Dt = -mu(class) * (x(class+1, time+1)+x(class, time))/2;
         %x(class+1,time+1)/Dt + mu(class)*x(class+1, time+1)/2 = x(class, time)/Dt - mu(class)*x(class, time)/2;
@@ -49,10 +41,10 @@ end
 x(1,t(end)) = (p(t(end))) + trapz(gamma*x(2:end, t(end))*Ds)/(1-gamma*Ds);
 
 
+%% Analytical Check
 t_new = 1:S_steps+1;
 
 solution = zeros(size(s,2),size(s,2));
-
 
 for i = 1:T/L
     for time=(i-1)*S_steps+1:i*S_steps+1
