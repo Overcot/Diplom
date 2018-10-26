@@ -24,17 +24,17 @@ A = [];
 b = [];
 Aeq = [];
 beq = [];
-for leftAborder=-10000000:0.1:0
-    for leftBborder = leftAborder:0.1:0
+for leftABorder=-10000000:0.1:0
+    for leftBBorder = leftABorder:0.1:0
         for rightABorder=0:0.1:100000000
-            for rightBborder=0:0.1:10000000
+            for rightBBorder=0:0.1:10000000
                 for leftAllee=0:0.01:1
                     for rightAllee = leftAllee:0.01:1
                         if (model == 'Anna')
                             init = [8,0,0.14];
                             lowerSSB = 0;
                             higherSSB = 0;
-                            [x, resnorm] = fmincon(@AnnaModel, init, A,b,Aeq,beq,[-10000000,-10000000,0], [100000000,10000000,0.25]);
+                            [x, resnorm] = fmincon(@AnnaModel, init, A,b,Aeq,beq,[leftABorder,leftBBorder,leftAllee], [rightABorder,rightBBorder,rightAllee]);
 
                         end
                         fileName = 'possibleVariants.xlsx';
@@ -44,7 +44,7 @@ for leftAborder=-10000000:0.1:0
                             xlswrite(fileName,header);
                         end
                         [~,~,input] = xlsread(fileName); % Read in your xls file to a cell array (input)
-                        new_data = {x(1), x(2), x(3), resnorm, leftAborder, leftBborder, leftAllee, rightABorder, rightBborder, rightAllee}; % This is a cell array of the new line you want to add
+                        new_data = {x(1), x(2), x(3), resnorm, leftABorder, leftBBorder, leftAllee, rightABorder, rightBBorder, rightAllee}; % This is a cell array of the new line you want to add
                         output = cat(1,input,new_data); % Concatinate your new data to the bottom of input
                         xlswrite(fileName,output); % Write to the new excel file. 
                     end
