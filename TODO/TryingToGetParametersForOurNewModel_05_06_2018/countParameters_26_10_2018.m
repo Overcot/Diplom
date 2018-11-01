@@ -19,16 +19,21 @@ end
 % Init data
 xdata = ssb;
 ydata = log(recruitment);
+% options setting
 optionslsqnonlin = optimoptions(@lsqnonlin, 'Algorithm','trust-region-reflective', 'Display', 'iter', 'Tolx',1e-20,'TolFun',1e-20);
+% u nas net ogranichenii vida Ax <= b & Aeq = B;
 A = [];
 b = [];
 Aeq = [];
 beq = [];
+% periberaem razlichnie znacheniya dlya levoi i pravoi granici parametrov
+% vozmozno(i skorre vsego) oni nevernie
 for leftABorder=-10000000:100000:0
     for leftBBorder = leftABorder:100000:0
         for rightABorder=700000:100000:100000000
             for rightBBorder=0:100000:10000000
                 for leftAllee=0:0.1:1
+                    % save results in "output" matrix - then in xlsx file
                     output = [];
                     fileName = 'possibleVariants.xlsx';
                     fileExist = exist(fileName,'file'); 
@@ -40,13 +45,20 @@ for leftABorder=-10000000:100000:0
                     for rightAllee = leftAllee:0.1:1
                         if (model == 'Anna')
                             init = [leftABorder,leftBBorder,leftAllee];
-                            lowerSSB = 0;
+                            % tried to calculate how many times function goes into one or other side(upper or lower)
+                            % more or less then allee effect value
+                            lowerSSB = 0; 
                             higherSSB = 0;
+                            
+                            % there it calculates parameters a, b and allee
+                            % threshold with applied borders
+          
                             [x, resnorm] = fmincon(@AnnaModel, init, A,b,Aeq,beq,[leftABorder,leftBBorder,leftAllee], [rightABorder,rightBBorder,rightAllee]);
                         end
                         new_data = {x(1), x(2), x(3), resnorm, leftABorder, leftBBorder, leftAllee, rightABorder, rightBBorder, rightAllee}; % This is a cell array of the new line you want to add
                         output = cat(1,output,new_data); % Concatinate your new data to the bottom of input
                     end
+                    % save results
                     output = cat(1,input,output); % Concatinate your new data to the bottom of input
                     xlswrite(fileName,output); % Write to the new excel file. 
                 end
