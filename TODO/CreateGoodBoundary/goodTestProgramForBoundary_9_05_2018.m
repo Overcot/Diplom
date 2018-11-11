@@ -1,18 +1,22 @@
 clear; clc;
+global ssb
 precision = 0.1;
 L = 5;
-T = 100;
+T = 5;
 gammaValue = 1/L;
 muValue = 1/2;
 x0 = 1;
-
+%anna model
+a = 8.244595391;
+b = 8.58578E-07;
+allee = 0.2;
 %% Numerical Part
-[x, L, T, Ds, Dt, S_steps, T_steps, s, t, gamma, mu, p] = startInit(precision, L, T, gammaValue, muValue, x0)
+[x, L, T, Ds, Dt, S_steps, T_steps, s, t, gamma, mu, p] = startInit(precision, L, T, gammaValue, muValue, x0);
 
 for time=t(1:end - 1)
     
-    x(1, time) = recruitmentFunction('Tahvonen', time, x, [Ds, Dt, gamma, p(time)]);
-    
+    %x(1, time) = recruitmentFunction('Tahvonen', time, x, [Ds, Dt, gamma, p(time)]);
+    x(1, time) = recruitmentFunction('Anna', time, x, [Ds, Dt, gamma, p(time), a, b, allee]);
     %%
     %{
     %{
@@ -38,7 +42,7 @@ for time=t(1:end - 1)
         x(class+1, time+1) = (x(class, time)/Dt - mu*x(class, time)/2)/(1/Dt + mu/2);
     end
 end
-x(1,t(end)) = (p(t(end))) + trapz(gamma*x(2:end, t(end))*Ds)/(1-gamma*Ds);
+%x(1,t(end)) = (p(t(end))) + trapz(gamma*x(2:end, t(end))*Ds)/(1-gamma*Ds);
 
 
 %% Analytical Check

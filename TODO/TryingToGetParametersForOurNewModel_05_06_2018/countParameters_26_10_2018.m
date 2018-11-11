@@ -1,4 +1,3 @@
-clear; clc;
 global recruitment ssb maxSSB lowerSSB higherSSB
 
 year = 2011 %possible values: 2011, 2010
@@ -28,6 +27,30 @@ Aeq = [];
 beq = [];
 % periberaem razlichnie znacheniya dlya levoi i pravoi granici parametrov
 % vozmozno(i skorre vsego) oni nevernie
+
+rng default % For reproducibility
+gs = GlobalSearch('NumTrialPoints',2000);
+
+problem = createOptimProblem('fmincon','x0',[0,0,0],...
+    'objective',@AnnaModel,'lb',[-10,-10,0],'ub',[10,10,1]);
+[x,resnorm] = run(gs,problem);
+
+params1 = [8.244595391 8.58578E-07 0.2]
+J1 = AnnaModel(params1)
+
+params2 = [8.635711156	2.64626E-06 0.54595332]
+J2 = AnnaModel(params2)
+
+params3 = x
+J3 = AnnaModel(params3)
+
+problem = createOptimProblem('fmincon','x0',[0,0,0],...
+    'objective',@AnnaModel,'lb',[-10,-10,0.1],'ub',[10,10,0.2]);
+[x,resnorm] = run(gs,problem);
+params4 = x
+J4 = AnnaModel(params4)
+
+%{
 for leftABorder=-10000000:100000:0
     for leftBBorder = leftABorder:100000:0
         for rightABorder=700000:100000:100000000
@@ -66,4 +89,4 @@ for leftABorder=-10000000:100000:0
         end
     end
 end
-
+%}

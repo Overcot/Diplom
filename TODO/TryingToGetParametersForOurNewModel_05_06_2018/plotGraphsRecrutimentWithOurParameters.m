@@ -21,6 +21,9 @@ tYears = 1963:year-1;
 params1 = [8.244595391; 8.58578E-07; 0.2];
 params2 = [8.635711156;	2.64626E-06; 0.54595332];
 
+J1 = AnnaModel(params1)
+J2 = AnnaModel(params2)
+
 %% Plot graphs Rec(t)
 
 y = log(recruitment);
@@ -64,7 +67,7 @@ legend('data','a = 8.24459539, b = 8.58578E-07, allee = 0.2');
 
 [ssbSorted, indexOfSSbSorted] = sort(ssb(t), 'ascend'); % sorting ssb and saving indexes
 
-ssbSorted = ssbSorted*100/(max(ssbSorted)); % comment to show in real values, not in % of SSB_max
+ssbSorted1 = ssbSorted*100/(max(ssbSorted)); % comment to show in real values, not in % of SSB_max
 
 recr1WithAlleeSorted = exp(y1(indexOfSSbSorted)); %recruitment with Allee
 
@@ -79,8 +82,8 @@ recr2WithoutAlleeSorted = exp(y2WithoutAllee(indexOfSSbSorted)); %recrutiment wi
 
 figure;
 hold on;
-plot(ssbSorted, recr1WithAlleeSorted./ssbSorted, '.-','MarkerSize',10); 
-plot(ssbSorted, recr1WithoutAlleeSorted./ssbSorted);
+plot(ssbSorted1, (recr1WithAlleeSorted./ssbSorted), '.-','MarkerSize',10); 
+plot(ssbSorted1, (recr1WithoutAlleeSorted./ssbSorted));
 xlabel('SSB (% of SSB_{max})');
 ylabel('R/SSB');
 legend('a = 8.24459539, b = 8.58578E-07, allee = 0.2','a = 8.24459539, b = 8.58578E-07, without Allee');
@@ -88,12 +91,16 @@ legend('a = 8.24459539, b = 8.58578E-07, allee = 0.2','a = 8.24459539, b = 8.585
 
 figure;
 hold on;
-plot(ssbSorted, recr2WithAlleeSorted./ssbSorted, '.-','MarkerSize',10); 
-plot(ssbSorted, recr2WithoutAlleeSorted./ssbSorted);
+plot(ssbSorted, (recr2WithAlleeSorted./ssbSorted), '.-','MarkerSize',10); 
+plot(ssbSorted, (recr2WithoutAlleeSorted./ssbSorted));
 xlabel('SSB (% of SSB_{max})');
 ylabel('R/SSB');
 legend('a = 8.635711156, b = 2.64626E-06, allee = 0.54595332','a = 8.635711156, b = 2.64626E-06 without Allee');
 
+figure;
+hold on;
+plot(ssb)
+
 %% Spearman Coefficient
 
-spearmanCorrelationDataAndAnnaModel = corr(y, y1, 'Type', 'Spearman')
+spearmanCorrelationDataAndAnnaModel = corr(y, y1, 'Type', 'Spearman');
