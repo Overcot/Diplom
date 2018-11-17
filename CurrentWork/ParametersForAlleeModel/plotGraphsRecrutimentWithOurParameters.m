@@ -104,3 +104,12 @@ plot(ssb)
 %% Spearman Coefficient
 
 spearmanCorrelationDataAndAnnaModel = corr(y, y1, 'Type', 'Spearman');
+
+
+%% temp
+figure;
+hold on;
+for val=0:0.001:1
+    tempval = AnnaModel([8.238427679866579, 0.000000818020886, val]);
+    plot(val, tempval,'r.');
+end
