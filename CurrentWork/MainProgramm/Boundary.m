@@ -5,7 +5,7 @@ function [ x ] = Boundary(x0, u)
     x(s, 1) = x0;
     for time=t(1:end - 1)
         
-        x(1, time) = recruitmentFunction('Anna', time, x, [Ds, Dt, gamma]);
+        x(1, time) = recruitmentFunction('Anna', time, x, [Ds, Dt]);
         %x(s(2:end), time + 1) = x(s(2:end), time) + Dt*((alpha(s(2:end)-1)-1)'.*x(s(2:end)-1, time) - u(s(2:end)-1, time)) - (Dt/Ds)*(x(s(2:end), time)-x(s(2:end)-1, time));
 
         % Potapov
@@ -16,6 +16,6 @@ function [ x ] = Boundary(x0, u)
             
         end
     end
-    x(1, end) = recruitmentFunction('Anna', time, x, [Ds, Dt, gamma, a, b, allee]);
+    x(1, t(end)) = recruitmentFunction('Anna', t(end), x, [Ds, Dt]);
     
 end

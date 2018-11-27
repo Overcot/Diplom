@@ -9,15 +9,14 @@ precision = 1;
 L = 10;
 T = 5;
 gammaValue = [0.013622642 0.161377358 0.419283019 0.698283019 0.877773585 0.999245283 1 1 1 1 1];
-muValue = [0.319 0.409 0.788 0.818 0.818 0.818 0.818 0.818 0.818 0.8180.818
-];
+muValue = [0.319 0.409 0.788 0.818 0.818 0.818 0.818 0.818 0.818 0.818 0.818];
 x0 = [487478000 184241000 20339000 10330000 8251000 871500 871500 871500 871500 871500 871500];
 %anna model
 a = 8.244595391;
 b = 8.58578E-07;
 allee = 0.2;
 
-folder_to_save = ['main(',num2str(precision), ')'];
+folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
 
 
 %% Init Part
@@ -26,9 +25,6 @@ folder_to_save = ['main(',num2str(precision), ')'];
 x = Boundary(x0,u);
 
 %% Params of Setki
-
-alpha(s(1:(S_steps/L):end)) = [1 0.95 0.85 0.8 0.7 0.5 0.3 0];
-alpha(s) = interp1(s(1:(S_steps/L):end),alpha(s(1:(S_steps/L):end)),s(1:end));
 
 lambda1 = 0;
 lambda2 = 1 - lambda1;
@@ -39,6 +35,9 @@ eps = 0;
 umax = 10000;
 umin = 0;
 
+mkdir(folder_to_save);
+plotGraph(x(1,:), {0:T}, 't', 'x(s=0,t')
+%{
     mkdir(folder_to_save);
     plotGraph2(xu2(1, :), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save, 'Zero control', 'Non zero control');
     plotGraph2(xu2(2*S_steps/L+1, :), xu(2*S_steps/L+1, :), {0:T}, 't', 'x(s=2, t)', folder_to_save, 'Zero control', 'Non zero control');
@@ -48,7 +47,7 @@ umin = 0;
     plotGraph2(xu2(:,2*T_steps/T+1), xu(:, 2*T_steps/T+1), {0:L}, 's', 'x(s, t=2)', folder_to_save, 'Zero control', 'Non zero control');
     plotGraph2(xu2(:,5*T_steps/T+1), xu(:, 5*T_steps/T+1), {0:L}, 's', 'x(s, t=5)', folder_to_save, 'Zero control', 'Non zero control');
     plotGraph2(xu2(:,end), xu(:,end), {0:L}, 's', 'x(s, t=8)', folder_to_save, 'Zero control', 'Non zero control');
-
+%}
 
 
 

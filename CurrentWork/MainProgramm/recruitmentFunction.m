@@ -1,6 +1,6 @@
 function x0 = recruitmentFunction(model, time, x, params)
 global ssb
-global a b allee
+global a b allee gamma p
 %   function to count x(0,t) for any given t
 %       input:
 %           model - suitable options: 'Tahvonen' and 'New'(to be implemented)
@@ -16,12 +16,10 @@ global a b allee
 %
     x0 = -1;
     Ds = params(1); Dt = params(2);
-    model
     if strcmp(model,'Tahvonen')
-        gamma = params(3); p = params(4);
         x0 = (p + trapz(gamma*x(2:end, time)*Ds))/(1-gamma*Ds);
     elseif strcmp(model,'Anna')
-        gamma = params(3);
+        gamma*x(1:end, time)
         ssbCurr = trapz(gamma*x(1:end, time)*Ds);
         
         ssb = [ssb, ssbCurr];
