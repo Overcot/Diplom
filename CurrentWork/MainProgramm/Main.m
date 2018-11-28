@@ -1,13 +1,13 @@
 clear all; 
 clc;
 global ssb;
-global x Ds Dt s t alpha 
+global x Ds Dt s t alpha;
 global gamma mu;
 global a b allee;
 global umin umax;
 precision = 1;
 L = 10;
-T = 50;
+T = 10;
 gammaValue = [0.013622642 0.161377358 0.419283019 0.698283019 0.877773585 0.999245283 1 1 1 1 1];
 muValue = [0.319 0.409 0.788 0.818 0.818 0.818 0.818 0.818 0.818 0.818 0.818];
 x0 = [487478000 184241000 20339000 10330000 8251000 871500 871500 871500 871500 871500 871500];
@@ -15,6 +15,7 @@ x0 = [487478000 184241000 20339000 10330000 8251000 871500 871500 871500 871500 
 a = 8.244595391;
 b = 8.58578E-07;
 allee = 0.2;
+ssb = [151903000];
 
 folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
 
