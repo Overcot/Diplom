@@ -15,7 +15,7 @@ x0 = [487478000 184241000 20339000 10330000 8251000 871500 871500 871500 871500 
 a = 8.244595391;
 b = 8.58578E-07;
 allee = 0.2;
-ssb = [151903000];
+ssb = [151903];
 
 folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
 
@@ -38,6 +38,17 @@ umin = 0;
 
 mkdir(folder_to_save);
 plotGraph(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
+plotGraph(x(2,:), {0:T}, 't', 'x(s=1,t)', 'Zero control', folder_to_save);
+plotGraph(x(3,:), {0:T}, 't', 'x(s=2,t)', 'Zero control', folder_to_save);
+plotGraph(x(4,:), {0:T}, 't', 'x(s=3,t)', 'Zero control', folder_to_save);
+plotGraph(x(5,:), {0:T}, 't', 'x(s=4,t)', 'Zero control', folder_to_save);
+plotGraph(x(6,:), {0:T}, 't', 'x(s=5,t)', 'Zero control', folder_to_save);
+plotGraph(x(7,:), {0:T}, 't', 'x(s=6,t)', 'Zero control', folder_to_save);
+plotGraph(x(8,:), {0:T}, 't', 'x(s=7,t)', 'Zero control', folder_to_save);
+plotGraph(x(9,:), {0:T}, 't', 'x(s=8,t)', 'Zero control', folder_to_save);
+plotGraph(x(10,:), {0:T}, 't', 'x(s=9,t)', 'Zero control', folder_to_save);
+plotGraph(x(11,:), {0:T}, 't', 'x(s=10,t)', 'Zero control', folder_to_save);
+
 %{
     mkdir(folder_to_save);
     plotGraph2(xu2(1, :), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save, 'Zero control', 'Non zero control');

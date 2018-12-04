@@ -12,7 +12,10 @@ elseif (year == 2011)
     recruitment = xlsread('ourData2010&2011','H3:H50');
     ssb = xlsread('ourData2010&2011','F4:F51');
     maxSSB = max(ssb);
-end
+elseif (year == 2016)
+    recruitment = xlsread('ourData2010&2011','H3:H50');
+    ssb = xlsread('ourData2010&2011','F4:F51');
+    maxSSB = max(ssb);
 
 %% Try finding parameters using fmincon
 % Init data
