@@ -49,6 +49,18 @@ plotGraph(x(9,:), {0:T}, 't', 'x(s=8,t)', 'Zero control', folder_to_save);
 plotGraph(x(10,:), {0:T}, 't', 'x(s=9,t)', 'Zero control', folder_to_save);
 plotGraph(x(11,:), {0:T}, 't', 'x(s=10,t)', 'Zero control', folder_to_save);
 
+plotGraph(x(:,1),{0:L},'s','x(s,t=0)','Zero control', folder_to_save);
+plotGraph(x(:,2),{0:L},'s','x(s,t=1)','Zero control', folder_to_save);
+plotGraph(x(:,3),{0:L},'s','x(s,t=2)','Zero control', folder_to_save);
+plotGraph(x(:,4),{0:L},'s','x(s,t=3)','Zero control', folder_to_save);
+plotGraph(x(:,5),{0:L},'s','x(s,t=4)','Zero control', folder_to_save);
+plotGraph(x(:,6),{0:L},'s','x(s,t=5)','Zero control', folder_to_save);
+plotGraph(x(:,7),{0:L},'s','x(s,t=6)','Zero control', folder_to_save);
+plotGraph(x(:,8),{0:L},'s','x(s,t=7)','Zero control', folder_to_save);
+plotGraph(x(:,9),{0:L},'s','x(s,t=8)','Zero control', folder_to_save);
+plotGraph(x(:,10),{0:L},'s','x(s,t=9)','Zero control', folder_to_save);
+plotGraph(x(:,11),{0:L},'s','x(s,t=10)','Zero control', folder_to_save);
+
 %{
     mkdir(folder_to_save);
     plotGraph2(xu2(1, :), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save, 'Zero control', 'Non zero control');
