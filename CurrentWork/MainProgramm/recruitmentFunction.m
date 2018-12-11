@@ -19,13 +19,13 @@ global a b allee gamma p
     if strcmp(model,'Tahvonen')
         %x0 = (p + trapz(gamma*x(2:end, time)*Ds))/(1-gamma*Ds);
     elseif strcmp(model,'Anna')
-        ssbCurr = gamma*x(1:end, time)*Ds/1000;
+        ssbCurr = gamma*x(1:end, time)*Ds;
         
-        ssb = [ssb, ssbCurr];
-        if ssb(end-1)./274032 > allee
-            value = log(ssb(end-1)) + a - b*ssb(end-1)
+        ssb(time)= ssbCurr;
+        if ssbCurr./274032 > allee
+            value = log(ssbCurr) + a - b*ssbCurr
         else
-            value = log(ssb(end-1)) + a - b*ssb(end-1) + (ssb(end-1)./274032-allee)
+            value = log(ssbCurr) + a - b*ssbCurr + (ssbCurr./274032-allee)
         end
         x0 = exp(value);
     end
