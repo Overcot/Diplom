@@ -8,9 +8,12 @@ global umin umax;
 precision = 1;
 L = 10;
 T = 10;
+
+xData = xlsread('pop_numbers','B2:L12');
+xData = transpose(xData);
 gammaValue = [0.013622642 0.161377358 0.419283019 0.698283019 0.877773585 0.999245283 1 1 1 1 1];
 muValue = [0.319 0.409 0.788 0.818 0.818 0.818 0.818 0.818 0.818 0.818 0.818];
-x0 = [487478000 184241000 20339000 10330000 8251000 871500 871500 871500 871500 871500 871500];
+x0 = xData(:,1);
 %anna model
 a = 8.244595391;
 b = 8.58578E-07;
@@ -37,6 +40,7 @@ umax = 10000;
 umin = 0;
 
 mkdir(folder_to_save);
+%{
 plotGraph(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
 plotGraph(x(2,:), {0:T}, 't', 'x(s=1,t)', 'Zero control', folder_to_save);
 plotGraph(x(3,:), {0:T}, 't', 'x(s=2,t)', 'Zero control', folder_to_save);
@@ -60,19 +64,29 @@ plotGraph(x(:,8),{0:L},'s','x(s,t=7)','Zero control', folder_to_save);
 plotGraph(x(:,9),{0:L},'s','x(s,t=8)','Zero control', folder_to_save);
 plotGraph(x(:,10),{0:L},'s','x(s,t=9)','Zero control', folder_to_save);
 plotGraph(x(:,11),{0:L},'s','x(s,t=10)','Zero control', folder_to_save);
-
-%{
-    mkdir(folder_to_save);
-    plotGraph2(xu2(1, :), xu(1, :), {0:T}, 't', 'x(s=0, t)', folder_to_save, 'Zero control', 'Non zero control');
-    plotGraph2(xu2(2*S_steps/L+1, :), xu(2*S_steps/L+1, :), {0:T}, 't', 'x(s=2, t)', folder_to_save, 'Zero control', 'Non zero control');
-    plotGraph2(xu2(5*S_steps/L+1, :), xu(5*S_steps/L+1, :), {0:T}, 't', 'x(s=5, t)', folder_to_save, 'Zero control', 'Non zero control');
-    plotGraph2(xu2(end, :), xu(end, :), {0:T}, 't', 'x(s=7, t)', folder_to_save, 'Zero control', 'Non zero control');
-    plotGraph2(xu2(:,1), xu(:,1), {0:L}, 's', 'x(s, t=0)', folder_to_save, 'Zero control', 'Non zero control');
-    plotGraph2(xu2(:,2*T_steps/T+1), xu(:, 2*T_steps/T+1), {0:L}, 's', 'x(s, t=2)', folder_to_save, 'Zero control', 'Non zero control');
-    plotGraph2(xu2(:,5*T_steps/T+1), xu(:, 5*T_steps/T+1), {0:L}, 's', 'x(s, t=5)', folder_to_save, 'Zero control', 'Non zero control');
-    plotGraph2(xu2(:,end), xu(:,end), {0:L}, 's', 'x(s, t=8)', folder_to_save, 'Zero control', 'Non zero control');
 %}
-
+mkdir('graphs_with_data');
+for i=1:11
+    msg = strcat('x(s=',num2str(i),',t)');
+    plotGraph2(xData(i,:),x(i,:),{0:T},'t',msg,'data','numerical','graphs_with_data');
+end
+for i=1:11
+    msg = strcat('x(s,t=',num2str(i),')');
+    plotGraph2(xData(:,i),x(:,i),{0:T},'s',msg,'data','numerical','graphs_with_data');
+end
+%{
+plotGraph2(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
+plotGraph2(x(2,:), {0:T}, 't', 'x(s=1,t)', 'Zero control', folder_to_save);
+plotGraph2(x(3,:), {0:T}, 't', 'x(s=2,t)', 'Zero control', folder_to_save);
+plotGraph2(x(4,:), {0:T}, 't', 'x(s=3,t)', 'Zero control', folder_to_save);
+plotGraph2(x(5,:), {0:T}, 't', 'x(s=4,t)', 'Zero control', folder_to_save);
+plotGraph2(x(6,:), {0:T}, 't', 'x(s=5,t)', 'Zero control', folder_to_save);
+plotGraph2(x(7,:), {0:T}, 't', 'x(s=6,t)', 'Zero control', folder_to_save);
+plotGraph2(x(8,:), {0:T}, 't', 'x(s=7,t)', 'Zero control', folder_to_save);
+plotGraph2(x(9,:), {0:T}, 't', 'x(s=8,t)', 'Zero control', folder_to_save);
+plotGraph2(x(10,:), {0:T}, 't', 'x(s=9,t)', 'Zero control', folder_to_save);
+plotGraph2(x(11,:), {0:T}, 't', 'x(s=10,t)', 'Zero control', folder_to_save);
+%}
 
 
 
