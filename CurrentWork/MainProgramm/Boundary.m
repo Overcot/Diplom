@@ -5,9 +5,9 @@ function [ x ] = Boundary(x0, u)
     x(s, 1) = x0;
     for time=t(1:end - 1)
         prev = 1;
-        while abs(prev-x(1,time))<10e-6
+        while prev~=x(1,time)
             prev = x(1,time);
-            x(1, time+1) = recruitmentFunction('Anna', time, x, [Ds, Dt]);
+            x(1, time) = recruitmentFunction('Anna', time, x, [Ds, Dt]);
         end
         %x(s(2:end), time + 1) = x(s(2:end), time) + Dt*((alpha(s(2:end)-1)-1)'.*x(s(2:end)-1, time) - u(s(2:end)-1, time)) - (Dt/Ds)*(x(s(2:end), time)-x(s(2:end)-1, time));
 
