@@ -1,6 +1,6 @@
 global recruitment ssb maxSSB lowerSSB higherSSB
 
-year = 2011 %possible values: 2011, 2010
+year = 2016 %possible values: 2011, 2010
 model = 'Anna' %possible values: 'Anna', 'Ricker'
 
 %% Import Data
@@ -13,10 +13,10 @@ elseif (year == 2011)
     ssb = xlsread('ourData2010&2011','F4:F51');
     maxSSB = max(ssb);
 elseif (year == 2016)
-    recruitment = xlsread('ourData2010&2011','H3:H50');
-    ssb = xlsread('ourData2010&2011','F4:F51');
+    recruitment = xlsread('ourData2010&2011&2016','L3:L55');
+    ssb = xlsread('ourData2010&2011&2016','J4:J56');
     maxSSB = max(ssb);
-
+end
 %% Try finding parameters using fmincon
 % Init data
 xdata = ssb;
