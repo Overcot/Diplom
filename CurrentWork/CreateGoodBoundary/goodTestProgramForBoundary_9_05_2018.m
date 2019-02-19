@@ -15,8 +15,8 @@ allee = 0.2;
 
 for time=t(1:end - 1)
     
-    %x(1, time) = recruitmentFunction('Tahvonen', time, x, [Ds, Dt, gamma, p(time)]);
-    x(1, time) = recruitmentFunction('Anna', time, x, [Ds, Dt, gamma, p(time), a, b, allee]);
+    x(1, time) = recruitmentFunction('Tahvonen', time, x, [Ds, Dt, gamma, p(time)]);
+    %x(1, time) = recruitmentFunction('Anna', time, x, [Ds, Dt, gamma, p(time), a, b, allee]);
     %%
     %{
     %{
@@ -42,7 +42,7 @@ for time=t(1:end - 1)
         x(class+1, time+1) = (x(class, time)/Dt - mu*x(class, time)/2)/(1/Dt + mu/2);
     end
 end
-%x(1,t(end)) = (p(t(end))) + trapz(gamma*x(2:end, t(end))*Ds)/(1-gamma*Ds);
+x(1,t(end)) = (p(t(end))) + trapz(gamma*x(2:end, t(end))*Ds)/(1-gamma*Ds);
 
 
 %% Analytical Check

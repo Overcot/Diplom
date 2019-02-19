@@ -76,11 +76,11 @@ plotGraph(x(:,11),{0:L},'s','x(s,t=10)','Zero control', folder_to_save);
 mkdir('graphs_with_data');
 for i=1:11
     msg = strcat('x(s=',num2str(i),',t)');
-    plotGraph2(xData(i,:),x(i,:),{0:T},'t',msg,'data','numerical','graphs_with_data');
+    plotGraph2(xData(i,:), x(i,:), {0:L}, 't', msg, 'data', 'numerical', 'graphs_with_data');
 end
 for i=1:11
     msg = strcat('x(s,t=',num2str(i),')');
-    plotGraph2(xData(:,i),x(:,i),{0:T},'s',msg,'data','numerical','graphs_with_data');
+    plotGraph2(xData(:,i), x(:,i), {0:T}, 's', msg, 'data', 'numerical', 'graphs_with_data');
 end
 %{
 plotGraph2(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
