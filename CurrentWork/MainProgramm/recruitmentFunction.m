@@ -17,7 +17,7 @@ global a b allee gamma
     x0 = -1;
     Ds = params(1); Dt = params(2);
     if strcmp(model,'Tahvonen')
-        x0 = (trapz(gamma(2:end)'.*x(2:end, time)*Ds))/(1-gamma(1)*Ds);
+        x0 = (gamma(2:end)*x(2:end, time)*Ds)/(1-gamma(1)*Ds);
     elseif strcmp(model,'Anna')
         %{
         ssbCurr = gamma*x(1:end, time)*Ds;        

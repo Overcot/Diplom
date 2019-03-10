@@ -1,7 +1,6 @@
 function [ x ] = Boundary(x0, u)
     global Ds Dt s t 
     global gamma mu;
-    global a b allee;
     x(s, 1) = x0;
     for time=t(1:end - 1)
 
@@ -17,6 +16,6 @@ function [ x ] = Boundary(x0, u)
         end
     end
     %x(1, t(end)) = recruitmentFunction('Anna', t(end), x, [Ds, Dt]);
-    x(1, t(end)) = recruitmentFunction('Tahvonen', time, x, [Ds, Dt]);
+    x(1, t(end)) = recruitmentFunction('Tahvonen', t(end), x, [Ds, Dt]);
     
 end
