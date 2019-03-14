@@ -9,10 +9,8 @@ function [ x ] = Boundary(x0, u)
 
         % Potapov
         for class = s(1:end-1)
-            %(x(class+1, time+1) - x(class, time))/Dt = -(mu(class+1)+mu(class))/(2*Dt) * (x(class+1, time+1)+x(class, time))/(2*Dt) - (u(s+h,t+h)+u(s,t))/(2*Dt) * (x(class+1, time+1)+x(class, time))/(2*Dt);
-            upper = ( (mu(class + 1) + mu(class))/(2*Dt) * x(class, time)/(2*Dt) + (u(class + 1, time + 1) + u(class, time))/(2*Dt) * x(class, time)/(2*Dt) - x(class, time)/Dt);
-            lower = (1/Dt + (mu(class + 1) + mu(class))/(2*Dt) + (u(class + 1, time + 1) + u(class, time))/(2*Dt));
-            x(class+1, time+1) = - upper/lower;
+            %(x(class+1, time+1) - x(class, time))/Dt = -(mu(class) * x(class, time) - u(class, time) * x(class, time));
+            x(class+1, time+1) = Dt*(-mu(class) * x(class, time) - u(class, time) * x(class, time) + x(class, time)/Dt);
         end
     end
     %x(1, t(end)) = recruitmentFunction('Anna', t(end), x, [Ds, Dt]);

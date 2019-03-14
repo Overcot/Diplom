@@ -11,9 +11,10 @@ T = 10;
 
 xData = xlsread('pop_numbers','B3:G13');
 ssbData = xlsread('SRData_ICES','C2:C13');
+xData = xData/1000;
 xData = transpose(xData);
 gammaValue = [0.013622642 0.161377358 0.419283019 0.698283019 0.877773585 0.999245283];
-muValue = [0.319 0.409 0.788 0.818 0.818 0.818];
+muValue = [0.296 0.455 0.801 0.818 0.818 0.818];
 x0 = xData(:,1);
 %anna model
 %2016
