@@ -32,7 +32,8 @@ beq = [];
 % vozmozno(i skorre vsego) oni nevernie
 
 rng default % For reproducibility
-gs = GlobalSearch('NumTrialPoints',2000);
+ms = MultiStart('FunctionTolerance',2e-4,'UseParallel',true, 'StartPointsToRun','bounds');
+gs = GlobalSearch(ms, 'NumTrialPoints', 1e7);
 
 problem = createOptimProblem('fmincon','x0',[0,0,0],...
     'objective',@AnnaModel,'lb',[-10,-10,0],'ub',[10,10,1]);
