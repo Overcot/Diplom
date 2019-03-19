@@ -29,7 +29,7 @@ global a b allee gamma
         end
         x0 = exp(value);
         %}
-        I = gamma(2:end)*x(2:end, time)*Ds;
-        x0 = exp(a-b*I)*I/(1-gamma(1)*Ds*exp(a-b*I))
+        I = gamma(1:end)*x(1:end, time)*Ds
+        x0 = exp(a-b*I)*I
     end
 end

@@ -1,5 +1,5 @@
 clear; clc;
-global ssb
+global ssb a b
 precision = 0.1;
 L = 5;
 T = 5;

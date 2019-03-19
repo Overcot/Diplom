@@ -1,5 +1,5 @@
 function x0 = recruitmentFunction(model, time, x, params)
-global ssb
+global ssb a b
 %   function to count x(0,t) for any given t
 %       input:
 %           model - suitable options: 'Tahvonen' and 'New'(to be implemented)
@@ -20,16 +20,16 @@ global ssb
         gamma = params(3); p = params(4);
         x0 = (p + trapz(gamma*x(2:end, time)*Ds))/(1-gamma*Ds);
     elseif strcmp(model,'Anna')
-        gamma = params(3); p = params(4);
-        a = params(5); b = params(6); allee = params(7);
-        ssbCurr = (p + trapz(gamma*x(2:end, time)*Ds))/(1-gamma*Ds);
+        % gamma = params(3); p = params(4);
+        % a = params(5); b = params(6); allee = params(7);
+        % ssbCurr = (p + trapz(gamma*x(2:end, time)*Ds))/(1-gamma*Ds);
         
-        ssb = [ssb, ssbCurr];
-        if ssbCurr/max(ssb) > allee
-            value = log(ssbCurr) + a - b*ssbCurr;
-        else
-            value = log(ssbCurr) + a - b*ssbCurr + (ssbCurr/max(ssb)-allee);
-        end
-        x0 = value;
+        % ssb = [ssb, ssbCurr];
+        % if ssbCurr/max(ssb) > allee
+        %     value = log(ssbCurr) + a - b*ssbCurr;
+        % else
+        %     value = log(ssbCurr) + a - b*ssbCurr + (ssbCurr/max(ssb)-allee);
+        % end
+        % x0 = value;
     end
 end
