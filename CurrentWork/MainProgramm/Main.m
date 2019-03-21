@@ -11,10 +11,10 @@ T = 10;
 
 xData = xlsread('pop_numbers','B3:G13');
 ssbData = xlsread('SRData_ICES','C2:C13');
+fish_mortality = xlsread('fishing_mortality','B3:G13');
 xData = xData/1000;
 xData = transpose(xData);
-gammaValue = [0.002728 0.098784 0.7585 2.643219 5.34322 8.227]
-%gammaValue = [0.013622642 0.161377358 0.419283019 0.698283019 0.877773585 0.999245283];
+gammaValue = [0.002728 0.098784 0.7585 2.643219 5.34322 8.227];
 muValue = [0.296 0.455 0.801 0.818 0.818 0.818];
 x0 = xData(:,1);
 %anna model
@@ -35,7 +35,7 @@ folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
 
 %% Init Part
 [x, x0, u, Ds, Dt, S_steps, T_steps, s, t, gamma, mu] = startInit(precision, L, T, gammaValue, muValue, x0);
-
+u = fish_mortality;
 x = Boundary(x0,u);
 
 mkdir(folder_to_save);
