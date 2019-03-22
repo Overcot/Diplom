@@ -29,7 +29,7 @@ global a b allee gamma
         end
         x0 = exp(value);
         %}
-        I = gamma(1:end)*x(1:end, time)*Ds
-        x0 = exp(a-b*I)*I
+        ssbCurr = gamma(1:end)*x(1:end, time)*Ds
+        x0 = exp(a-b*ssbCurr)*ssbCurr
     end
 end
