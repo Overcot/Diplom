@@ -11,7 +11,8 @@ T = 10;
 
 xData = xlsread('pop_numbers','B3:G13');
 ssbData = xlsread('SRData_ICES','C2:C13');
-fish_mortality = xlsread('fishing_mortality','B3:G13');
+[year, fish_mortality] = xlsread('fishing_mortality.xlsx','B3:G13');
+fish_mortality = str2double(fish_mortality);
 xData = xData/1000;
 xData = transpose(xData);
 gammaValue = [0.002728 0.098784 0.7585 2.643219 5.34322 8.227];
@@ -19,9 +20,14 @@ muValue = [0.296 0.455 0.801 0.818 0.818 0.818];
 x0 = xData(:,1);
 %anna model
 %2016
+a = 8.297699765062436 
+b = -0.000000623514772   
+allee = 0.199999967695232
+%{
  a = 8.28996149679616     
  b = -6.58775962051702e-07
  allee = 0.150063947533343
+%}
 %{
 %2011
 a = 8.244595391;

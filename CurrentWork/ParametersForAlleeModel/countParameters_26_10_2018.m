@@ -33,7 +33,7 @@ beq = [];
 
 rng default % For reproducibility
 ms = MultiStart('FunctionTolerance',2e-4,'UseParallel',true, 'StartPointsToRun','bounds');
-gs = GlobalSearch(ms, 'NumTrialPoints', 1e7);
+gs = GlobalSearch(ms, 'NumTrialPoints', 1e6);
 
 problem = createOptimProblem('fmincon','x0',[0,0,0],...
     'objective',@AnnaModel,'lb',[-10,-10,0],'ub',[10,10,1]);
