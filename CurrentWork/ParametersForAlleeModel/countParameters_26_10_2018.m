@@ -13,7 +13,7 @@ elseif (year == 2011)
     ssb = xlsread('ourData2010&2011','F4:F51');
     maxSSB = max(ssb);
 elseif (year == 2016)
-    recruitment = xlsread('ourData2010&2011&2016','L3:L55');
+    recruitment = xlsread('ourData2010&2011&2016','K3:K55'); % tonnes and thousands
     ssb = xlsread('ourData2010&2011&2016','J4:J56');
     maxSSB = max(ssb);
 end
