@@ -1,5 +1,5 @@
 function x0 = recruitmentFunction(model, time, x, params)
-global ssb
+global ssb ssbMax
 global a b allee gamma
 %   function to count x(0,t+1) for any given t
 %       input:
@@ -29,7 +29,11 @@ global a b allee gamma
         end
         x0 = exp(value);
         %}
-        ssbCurr = gamma(1:end)*x(1:end, time)*Ds
-        x0 = exp(a-b*ssbCurr)*ssbCurr
+        ssbCurr = gamma(1:end)*x(1:end, time)*Ds;
+        if ssbCurr./ssbMax > allee
+            x0 = ssbCurr*exp(a-b*ssbCurr);
+        else
+            x0 = ssbCurr*exp(a-b*ssbCurr)*exp(ssbCurr./ssbMax - allee)
+        end
     end
 end

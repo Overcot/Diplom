@@ -5,6 +5,7 @@ global x Ds Dt s t alpha;
 global gamma mu;
 global a b allee;
 global umin umax;
+global ssbMax;
 precision = 1;
 L = 5;
 T = 10;
@@ -18,6 +19,7 @@ xData = transpose(xData);
 gammaValue = [0.002728 0.098784 0.7585 2.643219 5.34322 8.227];
 muValue = [0.296 0.455 0.801 0.818 0.818 0.818];
 x0 = xData(:,1);
+ssbMax = max(ssbData)
 %anna model
 %2016
 a = 1.389953488259984  
