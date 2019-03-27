@@ -1,27 +1,40 @@
-clear all; 
-clc;
-global ssb;
-global x Ds Dt s t alpha;
+clear all; clc;
+global ssbMax;
+global x Ds Dt s t;
 global gamma mu;
 global a b allee;
 global umin umax;
-global ssbMax;
-precision = 1;
-L = 5;
-T = 10;
 
-xData = xlsread('pop_numbers','B3:G13');
-ssbData = xlsread('SRData_ICES','C2:C13');
-[year, fish_mortality] = xlsread('fishing_mortality.xlsx','B3:G13');
-fish_mortality = str2double(fish_mortality');
-xData = xData/1000;
-xData = transpose(xData);
-gammaValue = [0.002728 0.098784 0.7585 2.643219 5.34322 8.227];
-muValue = [0.296 0.455 0.801 0.818 0.818 0.818];
-x0 = xData(:,1);
+%% Установка констант
+precision = 1
+L = 5
+T = 10
+baseStartingYear = 1963;
+ourStartingYear = 1964
+
+%% Import data
+xDataRange = strcat('B',int2str(ourStartingYear - baseStartingYear + 2),':','G',int2str(ourStartingYear - baseStartingYear + 2 + T));
+xData = xlsread('pop_numbers', xDataRange);
+xData = transpose(xData/1000); % Приводим к размерности в тысячах и транспонируем
+
+ssbDataRange = strcat('C',int2str(ourStartingYear - baseStartingYear + 2),':','C',int2str(ourStartingYear - baseStartingYear + 2 + T));
+ssbData = xlsread('SRData_ICES', ssbDataRange);
+
+fishMortalityDataRange = strcat('B',int2str(ourStartingYear - baseStartingYear + 2),':','G',int2str(ourStartingYear - baseStartingYear + 2 + T));
+
+[year, fishMortalityData] = xlsread('fishing_mortality', fishMortalityDataRange);
+fishMortalityData = str2double(transpose(fishMortalityData));
+
+%TODO - import this data from excel
+gammaData = [0.002728 0.098784 0.7585 2.643219 5.34322 8.227];
+muData = [0.296 0.455 0.801 0.818 0.818 0.818];
+
+x0Data = xData(:,1);
 ssbMax = max(ssbData)
+
 %anna model
 %2016
+%TODO - import this from excel too
 a = 1.389953488259984  
 b = -0.000000623494768   
 allee = 0.199999999966238
@@ -41,17 +54,19 @@ a = 8.244595391;
 b = 8.58578E-07;
 allee = 0.2;
 %}
-ssb = ssbData(1);
 
+%%SetupFolderSave
 folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
 
 
 %% Init Part
-[x, x0, u, Ds, Dt, S_steps, T_steps, s, t, gamma, mu] = startInit(precision, L, T, gammaValue, muValue, x0);
-u = fish_mortality;
-x = Boundary(x0,u);
+[x, x0, u, Ds, Dt, S_steps, T_steps, s, t, gamma, mu] = startInit(precision, L, T, gammaData, muData, x0Data, fishMortalityData);
 
-mkdir(folder_to_save);
+x = Boundary(x0, u);
+
+if ~exist(folder_to_save, 'dir')
+    mkdir(folder_to_save)
+end
 %{
 plotGraph(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
 plotGraph(x(2,:), {0:T}, 't', 'x(s=1,t)', 'Zero control', folder_to_save);
@@ -77,11 +92,16 @@ plotGraph(x(:,9),{0:L},'s','x(s,t=8)','Zero control', folder_to_save);
 plotGraph(x(:,10),{0:L},'s','x(s,t=9)','Zero control', folder_to_save);
 plotGraph(x(:,11),{0:L},'s','x(s,t=10)','Zero control', folder_to_save);
 %}
-mkdir('graphs_with_data');
+
+if ~exist('graphs_with_data', 'dir')
+    mkdir('graphs_with_data')
+end
+
 for i=1:L+1
     msg = strcat('x(s=',num2str(i),',t)');
     plotGraph2(xData(i,:), x(i,:), {0:L}, 't', msg, 'data', 'numerical', 'graphs_with_data');
 end
+
 for i=1:T+1
     msg = strcat('x(s,t=',num2str(i),')');
     plotGraph2(xData(:,i), x(:,i), {0:T}, 's', msg, 'data', 'numerical', 'graphs_with_data');
