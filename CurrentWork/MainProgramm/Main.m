@@ -16,9 +16,6 @@ ourStartingYear = 1964
 %% Import data from excel
 [xData, x0Data, ssbData, ssbMax, fishMortalityData, gammaData, muData, a, b, allee] = importFromExcel(excelToImportFrom, ourStartingYear, baseStartingYear, T);
 
-%% SetupFolderSave
-folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
-
 %% Init Part based on constants and data
 [x, x0, u, Ds, Dt, S_steps, T_steps, s, t, gamma, mu] = startInit(precision, L, T, gammaData, muData, x0Data, fishMortalityData);
 
@@ -42,36 +39,6 @@ for i=1:T+1
     plotGraph2(xAlleeZero(:,i), x(:,i), {0:T}, 's', msg, 'WithoutAllee', 'Allee', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Without Allee');
 end
 
-%{
-folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
-if ~exist(folder_to_save, 'dir')
-    mkdir(folder_to_save)
-end
-plotGraph(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
-plotGraph(x(2,:), {0:T}, 't', 'x(s=1,t)', 'Zero control', folder_to_save);
-plotGraph(x(3,:), {0:T}, 't', 'x(s=2,t)', 'Zero control', folder_to_save);
-plotGraph(x(4,:), {0:T}, 't', 'x(s=3,t)', 'Zero control', folder_to_save);
-plotGraph(x(5,:), {0:T}, 't', 'x(s=4,t)', 'Zero control', folder_to_save);
-plotGraph(x(6,:), {0:T}, 't', 'x(s=5,t)', 'Zero control', folder_to_save);
-plotGraph(x(7,:), {0:T}, 't', 'x(s=6,t)', 'Zero control', folder_to_save);
-plotGraph(x(8,:), {0:T}, 't', 'x(s=7,t)', 'Zero control', folder_to_save);
-plotGraph(x(9,:), {0:T}, 't', 'x(s=8,t)', 'Zero control', folder_to_save);
-plotGraph(x(10,:), {0:T}, 't', 'x(s=9,t)', 'Zero control', folder_to_save);
-plotGraph(x(11,:), {0:T}, 't', 'x(s=10,t)', 'Zero control', folder_to_save);
-
-plotGraph(x(:,1),{0:L},'s','x(s,t=0)','Zero control', folder_to_save);
-plotGraph(x(:,2),{0:L},'s','x(s,t=1)','Zero control', folder_to_save);
-plotGraph(x(:,3),{0:L},'s','x(s,t=2)','Zero control', folder_to_save);
-plotGraph(x(:,4),{0:L},'s','x(s,t=3)','Zero control', folder_to_save);
-plotGraph(x(:,5),{0:L},'s','x(s,t=4)','Zero control', folder_to_save);
-plotGraph(x(:,6),{0:L},'s','x(s,t=5)','Zero control', folder_to_save);
-plotGraph(x(:,7),{0:L},'s','x(s,t=6)','Zero control', folder_to_save);
-plotGraph(x(:,8),{0:L},'s','x(s,t=7)','Zero control', folder_to_save);
-plotGraph(x(:,9),{0:L},'s','x(s,t=8)','Zero control', folder_to_save);
-plotGraph(x(:,10),{0:L},'s','x(s,t=9)','Zero control', folder_to_save);
-plotGraph(x(:,11),{0:L},'s','x(s,t=10)','Zero control', folder_to_save);
-%}
-
 folder_to_save = 'WithAllee_VS_Data';
 if ~exist(folder_to_save, 'dir')
     mkdir(folder_to_save)
@@ -86,7 +53,8 @@ for i=1:T+1
     msg = strcat('x(s,t=',num2str(i),')');
     plotGraph2(xData(:,i), x(:,i), {0:T}, 's', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
 end
-%% Params of Setki
+
+%% Optimal Control Parameters
 
 lambda1 = 0;
 lambda2 = 1 - lambda1;
@@ -96,6 +64,8 @@ p = 1;
 eps = 0;
 umax = 10000;
 umin = 0;
+
+%searchForOptimalControl()
 
 %% Init of functionals
 %J2uCorrect = trapz(0:Ds:L, (xu(s, end) - need_x(s)').^2);
@@ -215,8 +185,11 @@ while (lambda1 <= 1)
     save([pwd '/' folder_to_save '/storedJ2u.mat'], 'storedJ2u');
     save([pwd '/' folder_to_save '/storedPrev.mat'], 'storedPrev');
     %}
+    %{
     lambda1 = lambda1+0.1;
     lambda2 = 1 - lambda1;
+    %}
+
 end
 hold off;
 saveas(gcf,'J1J2.jpg','jpg')
