@@ -6,68 +6,47 @@ global a b allee;
 global umin umax;
 
 %% Установка констант
+excelToImportFrom = 'AllDataICES2016'
 precision = 1
 L = 5
-T = 10
+T = 20
 baseStartingYear = 1963;
 ourStartingYear = 1964
 
-%% Import data
-xDataRange = strcat('B',int2str(ourStartingYear - baseStartingYear + 2),':','G',int2str(ourStartingYear - baseStartingYear + 2 + T));
-xData = xlsread('pop_numbers', xDataRange);
-xData = transpose(xData/1000); % Приводим к размерности в тысячах и транспонируем
+%% Import data from excel
+[xData, x0Data, ssbData, ssbMax, fishMortalityData, gammaData, muData, a, b, allee] = importFromExcel(excelToImportFrom, ourStartingYear, baseStartingYear, T);
 
-ssbDataRange = strcat('C',int2str(ourStartingYear - baseStartingYear + 2),':','C',int2str(ourStartingYear - baseStartingYear + 2 + T));
-ssbData = xlsread('SRData_ICES', ssbDataRange);
-
-fishMortalityDataRange = strcat('B',int2str(ourStartingYear - baseStartingYear + 2),':','G',int2str(ourStartingYear - baseStartingYear + 2 + T));
-
-[year, fishMortalityData] = xlsread('fishing_mortality', fishMortalityDataRange);
-fishMortalityData = str2double(transpose(fishMortalityData));
-
-%TODO - import this data from excel
-gammaData = [0.002728 0.098784 0.7585 2.643219 5.34322 8.227];
-muData = [0.296 0.455 0.801 0.818 0.818 0.818];
-
-x0Data = xData(:,1);
-ssbMax = max(ssbData)
-
-%anna model
-%2016
-%TODO - import this from excel too
-a = 1.389953488259984  
-b = -0.000000623494768   
-allee = 0.199999999966238
-%{
-a = 8.297699765062436 
-b = -0.000000623514772   
-allee = 0.199999967695232
-%}
-%{
- a = 8.28996149679616     
- b = -6.58775962051702e-07
- allee = 0.150063947533343
-%}
-%{
-%2011
-a = 8.244595391;
-b = 8.58578E-07;
-allee = 0.2;
-%}
-
-%%SetupFolderSave
+%% SetupFolderSave
 folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
 
-
-%% Init Part
+%% Init Part based on constants and data
 [x, x0, u, Ds, Dt, S_steps, T_steps, s, t, gamma, mu] = startInit(precision, L, T, gammaData, muData, x0Data, fishMortalityData);
 
+u = exp(-u);
 x = Boundary(x0, u);
 
+allee = 0
+xAlleeZero = Boundary(x0, u);
+
+folder_to_save = 'WithAndWithoutAllee';
 if ~exist(folder_to_save, 'dir')
     mkdir(folder_to_save)
 end
+for i=1:L+1
+    msg = strcat('x(s=',num2str(i),',t)');
+    plotGraph2(xAlleeZero(i,:), x(i,:), {0:L}, 't', msg, 'WithoutAllee', 'Allee', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Without Allee');
+end
+
+for i=1:T+1
+    msg = strcat('x(s,t=',num2str(i),')');
+    plotGraph2(xAlleeZero(:,i), x(:,i), {0:T}, 's', msg, 'WithoutAllee', 'Allee', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Without Allee');
+end
+
 %{
+folder_to_save = ['graphs,precision=(',num2str(precision), ')'];
+if ~exist(folder_to_save, 'dir')
+    mkdir(folder_to_save)
+end
 plotGraph(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
 plotGraph(x(2,:), {0:T}, 't', 'x(s=1,t)', 'Zero control', folder_to_save);
 plotGraph(x(3,:), {0:T}, 't', 'x(s=2,t)', 'Zero control', folder_to_save);
@@ -93,34 +72,20 @@ plotGraph(x(:,10),{0:L},'s','x(s,t=9)','Zero control', folder_to_save);
 plotGraph(x(:,11),{0:L},'s','x(s,t=10)','Zero control', folder_to_save);
 %}
 
-if ~exist('graphs_with_data', 'dir')
-    mkdir('graphs_with_data')
+folder_to_save = 'WithAllee_VS_Data';
+if ~exist(folder_to_save, 'dir')
+    mkdir(folder_to_save)
 end
 
 for i=1:L+1
     msg = strcat('x(s=',num2str(i),',t)');
-    plotGraph2(xData(i,:), x(i,:), {0:L}, 't', msg, 'data', 'numerical', 'graphs_with_data');
+    plotGraph2(xData(i,:), x(i,:), {0:L}, 't', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
 end
 
 for i=1:T+1
     msg = strcat('x(s,t=',num2str(i),')');
-    plotGraph2(xData(:,i), x(:,i), {0:T}, 's', msg, 'data', 'numerical', 'graphs_with_data');
+    plotGraph2(xData(:,i), x(:,i), {0:T}, 's', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
 end
-%{
-plotGraph2(x(1,:), {0:T}, 't', 'x(s=0,t)', 'Zero control', folder_to_save);
-plotGraph2(x(2,:), {0:T}, 't', 'x(s=1,t)', 'Zero control', folder_to_save);
-plotGraph2(x(3,:), {0:T}, 't', 'x(s=2,t)', 'Zero control', folder_to_save);
-plotGraph2(x(4,:), {0:T}, 't', 'x(s=3,t)', 'Zero control', folder_to_save);
-plotGraph2(x(5,:), {0:T}, 't', 'x(s=4,t)', 'Zero control', folder_to_save);
-plotGraph2(x(6,:), {0:T}, 't', 'x(s=5,t)', 'Zero control', folder_to_save);
-plotGraph2(x(7,:), {0:T}, 't', 'x(s=6,t)', 'Zero control', folder_to_save);
-plotGraph2(x(8,:), {0:T}, 't', 'x(s=7,t)', 'Zero control', folder_to_save);
-plotGraph2(x(9,:), {0:T}, 't', 'x(s=8,t)', 'Zero control', folder_to_save);
-plotGraph2(x(10,:), {0:T}, 't', 'x(s=9,t)', 'Zero control', folder_to_save);
-plotGraph2(x(11,:), {0:T}, 't', 'x(s=10,t)', 'Zero control', folder_to_save);
-%}
-
-
 %% Params of Setki
 
 lambda1 = 0;

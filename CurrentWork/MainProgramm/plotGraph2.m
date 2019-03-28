@@ -1,4 +1,4 @@
-function [] = plotGraph2(analytical, numerical, xFromTo, xmsg, ymsg,legend1, legend2, dir )
+function [] = plotGraph2(analytical, numerical, xFromTo, xmsg, ymsg,legend1, legend2, dir, titleTxt)
     figure('visible','off');
     hold on;
     plot(analytical,'-')
@@ -7,7 +7,7 @@ function [] = plotGraph2(analytical, numerical, xFromTo, xmsg, ymsg,legend1, leg
     set(gca, 'XtickLabel', xFromTo);
     xlabel(xmsg)
     ylabel(ymsg)
-    %title(['our model precision ', num2str(precision)])
+    title(titleTxt)
     hold off;
     saveas(gcf,[pwd '/' dir '/' ymsg '.png'],'png')
 end
