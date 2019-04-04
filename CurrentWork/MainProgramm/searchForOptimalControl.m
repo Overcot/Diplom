@@ -1,4 +1,4 @@
-function [xOptim, uOptim] = searchForOptimalControl(xData, uData, x0Data, L, T)
+function [xOptim, uOptim, JOptim] = searchForOptimalControl(xData, uData, x0Data, L, T)
     %% Optimal Control Parameters
     global Ds Dt s t;
 
@@ -7,190 +7,180 @@ function [xOptim, uOptim] = searchForOptimalControl(xData, uData, x0Data, L, T)
 
     eps = 0;
     uMax = 1;
-    uMin = 0;
+    uMin = 0.3;
 
-    JData = trapz(0:Dt:T, trapz(0:Ds:L, exp(-rho*t).*p.*uData(s, t).*xData(s, t)))
-    for index = uMin:0.1:uMax
+    JData = trapz(0:Dt:T, trapz(0:Ds:L, functionalInternal(rho, p, xData, uData)))
+    % for index = uMin:0.1:uMax
+        index = uMin;
+        uK = 1 * ones(size(s,2),size(t,2));
+        k = 0;
+        prev = 1;
+        storedJu = [];
+        storedPrev = [];
+        uPrev = -1 * ones(size(s,2),size(t,2));
 
-        uK = ones(size(s,2),size(t,2));
-
-        while (k < 10) && (prev > 10e-3) && (J2u > 10e-3)
+        while (k < 10) %&& (prev > 10e-3)
             %% First Step
             % Pryamaya zadacha
-            xu = Boundary(x0Data, uK);
+            xU = Boundary(x0Data, uK);
     
             % Obratnaya
-            psiStartCondition = -2*(xu(s, end) - need_x(s)');
-            psi = reverseBoundary(psiStartCondition);
+            psi = reverseBoundary(xU, uK, L, rho);
     
             % Derivatives of Functionals
-            
-            % J_ = psi;
+            J_ = JDerivative(xU, psi, rho, p);
     
-            beta = sqrt(Ds^2+Dt^2)/norm(J2_);
-            if beta < 0.1
-                beta = 0.1;
-            end
+            beta = calculateStep(k, 1);
     
-            uk_ = projection(uk - beta * (lambda1 * J1_ + lambda2 * J2_));
+            uK_ = projectionU(uK - beta * J_, uMin, uMax);
     
             %% Second step
             % Pryamaya zadacha
-            xu = Boundary(CorrectX(s,1), uk_);
+            xU = Boundary(x0Data, uK_);
     
             % Obratnaya
-            psiStartCondition = -2*(xu(s, end) - need_x(s)');
-            psi = reverseBoundary(psiStartCondition);
+            psi = reverseBoundary(xU, uK, L, rho);
     
             % Derivatives of Functionals
-            J1_ = -p*phi*L*T;
-            J2_ = psi;
+            J_ = JDerivative(xU, psi, rho, p);
     
-            beta = k*(Ds^2+Dt^2)/norm(J2_);
-            if beta < 0.1
-                beta = 0.1;
-            end
+            beta = calculateStep(k, 1);
     
-            uk = projection(uk_ - beta * (lambda1 * J1_ + lambda2 * J2_));
-    
-    
-            xu = Boundary(CorrectX(s, 1), uk);
+            uK = projectionU(uK_ - beta * J_, uMin, uMax);
+
+            xU = Boundary(x0Data, uK);
     
             k
     
-            J2u = trapz((xu(s, end) - need_x(s)').^2)*Ds;
-            J1u = -p*trapz(trapz(phi*uk(s, t))*Ds)*Dt;
-            abs(J2u - J2uCorrect)
-            abs(J1u - J1uCorrect)
-            storedJ1u(end+1) = J1u;
-            storedJ2u(end+1) = J2u;
+            % Ju = trapz(0:Dt:T, trapz(0:Ds:L, exp(-rho*t).*p.*uK(s, t).*xU(s, t)))
+            Ju = sum(sum(exp(-rho*t).*p.*uK(s, t).*xU(s, t)))
+            abs(Ju - JData)
+            storedJu(end+1) = Ju;
             k = k+1;
     
-            prev = sum(sum((uk-uprev).^2))
+            prev = sum(sum((uK-uPrev).^2))
             storedPrev(end+1) = prev;
             
-            uprev = uk;
+            uPrev = uK;
         end
-    end
-    
-    
-%% Optimization problem
-%{
-pause
-figure(1)
-hold on;
-xlabel('J2u')
-ylabel('J1u')
-lambda1 = 0;
-while (lambda1 <= 1)
-    k = 1;
-    J2u = 1;
-    uk = 5000*ones(size(s,2), size(t,2));
-    uk_ = zeros(size(s,2), size(t,2));
-    uprev = -1*ones(size(s,2), size(t,2));
-    prev = 1;
-    storedJ1u = [];
-    storedJ2u = [];
-    storedPrev = [];
-    
-    while (k < 1000000) && (prev > 10e-3) && (J2u > 10e-3)
-        %% First Step
-        % Pryamaya zadacha
-        xu = Boundary(CorrectX(s,1), uk);
-
-        % Obratnaya
-        psiStartCondition = -2*(xu(s, end) - need_x(s)');
-        psi = reverseBoundary(psiStartCondition);
-
-        % Derivatives of Functionals
-        J1_ = -p*phi*L*T;
-        J2_ = psi;
-
-        beta = sqrt(Ds^2+Dt^2)/norm(J2_);
-        if beta < 0.1
-            beta = 0.1;
-        end
-
-        uk_ = projection(uk - beta * (lambda1 * J1_ + lambda2 * J2_));
-
-        %% Second step
-        % Pryamaya zadacha
-        xu = Boundary(CorrectX(s,1), uk_);
-
-        % Obratnaya
-        psiStartCondition = -2*(xu(s, end) - need_x(s)');
-        psi = reverseBoundary(psiStartCondition);
-
-        % Derivatives of Functionals
-        J1_ = -p*phi*L*T;
-        J2_ = psi;
-
-        beta = k*(Ds^2+Dt^2)/norm(J2_);
-        if beta < 0.1
-            beta = 0.1;
-        end
-
-        uk = projection(uk_ - beta * (lambda1 * J1_ + lambda2 * J2_));
-
-
-        xu = Boundary(CorrectX(s, 1), uk);
-
-        k
-
-        J2u = trapz((xu(s, end) - need_x(s)').^2)*Ds;
-        J1u = -p*trapz(trapz(phi*uk(s, t))*Ds)*Dt;
-        abs(J2u - J2uCorrect)
-        abs(J1u - J1uCorrect)
-        storedJ1u(end+1) = J1u;
-        storedJ2u(end+1) = J2u;
-        k = k+1;
-
-        prev = sum(sum((uk-uprev).^2))
-        storedPrev(end+1) = prev;
-        
-        uprev = uk;
-    end
-    figure(1)
-    if (lambda1 == 0)
-        plot(J2u, J1u, 'ro', 'markers', 5);
-    elseif (lambda1 == 1)
-        plot(J2u, J1u, 'yo', 'markers', 5);
-    else
-        plot(J2u, J1u, 'o', 'markers', 5, 'Color', [0, lambda1, 0] );
-    end
-    folder_to_save = num2str(lambda1);
-    mkdir(folder_to_save);
-    %{
-    plotGraph(CorrectX(1,:),xu(1,:), {0:T}, 't', 'x(s=0, t)', folder_to_save);
-    plotGraph(CorrectX(1*S_steps/L+1,:),xu(1*S_steps/L+1,:), {0:T}, 't', 'x(s=1, t)', folder_to_save);
-    plotGraph(CorrectX(2*S_steps/L+1,:),xu(2*S_steps/L+1,:), {0:T}, 't', 'x(s=2, t)', folder_to_save);
-    plotGraph(CorrectX(5*S_steps/L+1,:),xu(5*S_steps/L+1,:), {0:T}, 't', 'x(s=5, t)', folder_to_save);
-    plotGraph(CorrectX(end,:),xu(end,:), {0:T}, 't', 'x(s=7, t)', folder_to_save);
-    
-    plotGraph(CorrectX(:,1),xu(:,1), {0:L}, 's', 'x(s, t=0)', folder_to_save);
-    plotGraph(CorrectX(:,1*T_steps/T+1),xu(:,1*T_steps/T+1), {0:L}, 's', 'x(s, t=1)', folder_to_save);
-    plotGraph(CorrectX(:,2*T_steps/T+1),xu(:,2*T_steps/T+1), {0:L}, 's', 'x(s, t=2)', folder_to_save);
-    plotGraph(CorrectX(:,5*T_steps/T+1),xu(:,5*T_steps/T+1), {0:L}, 's', 'x(s, t=5)', folder_to_save);
-    plotGraph(CorrectX(:,t(end)),xu(:,t(end)), {0:L}, 's', 'x(s, t=8)', folder_to_save);
-
-    plotGraph(CorrectU(1,:),uk(1,:), {0:T}, 't', 'u(s=0, t)', folder_to_save);
-    plotGraph(CorrectU(1*S_steps/L+1,:),uk(1*S_steps/L+1,:), {0:T}, 't', 'u(s=1, t)', folder_to_save);
-    plotGraph(CorrectU(2*S_steps/L+1,:),uk(2*S_steps/L+1,:), {0:T}, 't', 'u(s=2, t)', folder_to_save);
-    plotGraph(CorrectU(5*S_steps/L+1,:),uk(5*S_steps/L+1,:), {0:T}, 't', 'u(s=5, t)', folder_to_save);
-    plotGraph(CorrectU(end,:),uk(end,:), {0:T}, 't', 'u(s=7, t)', folder_to_save);
-
-    plotGraph(CorrectU(:,1),uk(:,1), {0:L}, 's', 'u(s, t=0)', folder_to_save);
-    plotGraph(CorrectU(:,1*T_steps/T+1),uk(:,1*T_steps/T+1), {0:L}, 's', 'u(s, t=1)', folder_to_save);
-    plotGraph(CorrectU(:,2*T_steps/T+1),uk(:,2*T_steps/T+1), {0:L}, 's', 'u(s, t=2)', folder_to_save);
-    plotGraph(CorrectU(:,5*T_steps/T+1),uk(:,5*T_steps/T+1), {0:L}, 's', 'u(s, t=5)', folder_to_save);
-    plotGraph(CorrectU(:,t(end)),uk(:,t(end)), {0:L}, 's', 'u(s, t=8)', folder_to_save);
-    save([pwd '/' folder_to_save '/storedJ1u.mat'], 'storedJ1u');
-    save([pwd '/' folder_to_save '/storedJ2u.mat'], 'storedJ2u');
-    save([pwd '/' folder_to_save '/storedPrev.mat'], 'storedPrev');
-    %}
-    %{
-    lambda1 = lambda1+0.1;
-    lambda2 = 1 - lambda1;
-    %}
-
+        uOptim = uPrev;
+        xOptim = xU;
+        JOptim = Ju;
+        storedJu
+        storedPrev
+    % end
 end
+
+function [ J_ ] = JDerivative(x, psi, rho, p)
+    global Ds Dt s t;
+    global mu;
+    % J' = -(1-mu) x * psi + delta'_u
+    J_ = - (1 - mu(s))' .* x(s, t) .* psi(s, t) + functionalInternalDerivativeU(rho, p, x)
+end
+
+function [ psi ] = reverseBoundary(xU, uK, L, rho)
+    global Ds Dt s t;
+    global mu gamma;
+    psi = zeros(size(s,2), size(t,2));
+    right = M(1, uK, rho);
+    for i=2:L
+        right = right .* (1 + N(i, uK)) + M(i, uK, rho);
+    end
+    P = phiDerivative(gamma*xU);
+    K = sum(gamma);
+    A = K * P
+    left = (1 + N(1, uK) - A);
+    for i=2:L-1
+        left = (1 + N(i, uK)).*left - A;
+    end
+    left = A - (1 + N(L, uK)).*left;
+
+    psi0 = left.\right;
+    psi(1, t) = psi0;
+    int = sum(K*psi0);
+    for class=s(end-1:-1:2)
+        for time=t(class:end)
+            psi(class, time) = MTime(class - 1, uK, rho, time - 1) + (1 + NTime(class, uK, time)).*psi(class - 1, time - 1) - int;
+        end
+    end
+    psi
+end
+
+function value = M(i, u, rho)
+    global s t;
+    value = -exp(-rho*t).*u(i, t)
+end
+
+function value = MTime(i, u, rho, time)
+    value = -exp(-rho*time).*u(i, time)
+end
+
+function value = N(i, u)
+    global s t;
+    global mu;
+    value = mu(i)+(1 - mu(i)).*u(i, t);
+end
+function value = NTime(i, u, time)
+    global mu;
+    value = mu(i)+(1 - mu(i)).*u(i, time)
+end
+function [ nu_x ] = rightSideDerivativeX(u)
+    global s t;
+    global mu;
+    nu_x = - mu(s) - (1 - mu(s)).*u(s, t)
+end
+
+function [ nu_u ] = rightSideDerivativeU(x)
+    global s t;
+    global mu;
+    nu_u = - (1 - mu(s)) .* x(s, t)
+end
+
+function [ Jmatrix ] = functionalInternal(rho, p, xData, uData)
+    global s t;
+    Jmatrix = exp(-rho*t).*p.*uData(s, t).*xData(s, t);
+end
+
+function [ ans ] = functionalInternalDerivativeX(rho, p, uData)
+    global s t;
+    ans = exp(-rho*t).*p.*uData(s, t);
+end
+
+function [ ans ] = functionalInternalDerivativeU(rho, p, xData)
+    global s t;
+    ans = exp(-rho*t).*p.*xData(s, t);
+end
+
+function [ phi_ ] = phiDerivative(ksi)
+    global s t;
+    global a b allee ssbMax;
+    phi_ = -1;
+    if (ksi./ssbMax > allee)
+        phi_ = exp(a-b.*ksi).*(1-b.*ksi);
+    else
+        phi_ = exp(ksi./ssbMax - allee) .* exp(a-b.*ksi) .* (1 - b.*ksi - ksi./ssbMax);
+    end
+end
+
+function [ u ] = projectionU(u, uMin, uMax)
+    global s t;
+    for time=t
+         for class=s
+             if u(class, time) > uMax
+                 u(class, time) = uMax;
+             elseif u(class, time) < uMin
+                 u(class, time) = uMin;
+             end
+         end
+    end
+ end
+
+ function beta = calculateStep(k, JDerivative)
+     global Ds Dt;
+    %  beta = k * (Ds^2 + Dt^2)/norm(JDerivative);
+    %  if beta < 0.1
+    %      beta = 0.1;
+    %  end
+    beta = 0.1;
+ end
+ 

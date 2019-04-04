@@ -44,7 +44,7 @@ for time=t(1:end - 1)
 end
 x(1,t(end)) = (p(t(end))) + trapz(gamma*x(2:end, t(end))*Ds)/(1-gamma*Ds);
 
-
+     
 %% Analytical Check
 t_new = 1:S_steps+1;
 

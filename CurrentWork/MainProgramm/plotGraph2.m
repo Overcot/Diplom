@@ -4,7 +4,7 @@ function [] = plotGraph2(analytical, numerical, xFromTo, xmsg, ymsg,legend1, leg
     plot(analytical,'-')
     plot(numerical,'--')
     legend({legend1, legend2});
-    set(gca, 'XtickLabel', xFromTo);
+    xlim([1 xFromTo])
     xlabel(xmsg)
     ylabel(ymsg)
     title(titleTxt)

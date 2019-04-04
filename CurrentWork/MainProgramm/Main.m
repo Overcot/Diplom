@@ -19,10 +19,10 @@ ourStartingYear = 1964
 %% Init Part based on constants and data
 [x, x0, u, Ds, Dt, S_steps, T_steps, s, t, gamma, mu] = startInit(precision, L, T, gammaData, muData, x0Data, fishMortalityData);
 
-% x = Boundary(x0, u);
+x = Boundary(x0, u);
 
-% allee = 0
-% xAlleeZero = Boundary(x0, u);
+allee = 0
+xAlleeZero = Boundary(x0, u);
 
 
 
@@ -32,12 +32,12 @@ ourStartingYear = 1964
 % end
 % for i=1:L+1
 %     msg = strcat('x(s=',num2str(i),',t)');
-%     plotGraph2(xAlleeZero(i,:), x(i,:), {0:L}, 't', msg, 'WithoutAllee', 'Allee', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Without Allee');
+%     plotGraph2(xAlleeZero(i,:), x(i,:), T+1, 't', msg, 'WithoutAllee', 'Allee', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Without Allee');
 % end
 
 % for i=1:T+1
 %     msg = strcat('x(s,t=',num2str(i),')');
-%     plotGraph2(xAlleeZero(:,i), x(:,i), {0:T}, 's', msg, 'WithoutAllee', 'Allee', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Without Allee');
+%     plotGraph2(xAlleeZero(:,i), x(:,i), L+1, 's', msg, 'WithoutAllee', 'Allee', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Without Allee');
 % end
 
 % folder_to_save = 'WithAllee_VS_Data';
@@ -47,16 +47,18 @@ ourStartingYear = 1964
 
 % for i=1:L+1
 %     msg = strcat('x(s=',num2str(i),',t)');
-%     plotGraph2(xData(i,:), x(i,:), {0:L}, 't', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
+%     plotGraph2(xData(i,:), x(i,:), T+1, 't', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
 % end
 
 % for i=1:T+1
 %     msg = strcat('x(s,t=',num2str(i),')');
-%     plotGraph2(xData(:,i), x(:,i), {0:T}, 's', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
+%     plotGraph2(xData(:,i), x(:,i), L+1, 's', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
 % end
 
-[xOptim, uOptim] = searchForOptimalControl(xData, fishMortalityData, L, T);
-
+[xOptim, uOptim, JOptim] = searchForOptimalControl(xData, fishMortalityData, x0Data, L, T);
+rho = 0.3;
+p = 1;
+JData = sum(sum(exp(-rho*t).*p.*fishMortalityData(s, t).*xData(s, t)))
 folder_to_save = 'OptimalSolution';
 if ~exist(folder_to_save, 'dir')
     mkdir(folder_to_save)
@@ -64,20 +66,20 @@ end
 
 for i=1:L+1
     msg = strcat('x(s=',num2str(i),',t)');
-    plotGraph2(xData(i,:), xOptim(i,:), {0:L}, 't', msg, 'data', 'optimal', folder_to_save, 'Pop numbers In Optimal Solution (In Thousands) with Allee Vs Data');
+    plotGraph2(xData(i,:), xOptim(i,:), T+1, 't', msg, 'data', 'optimal', folder_to_save, 'Pop numbers In Optimal Solution (In Thousands) with Allee Vs Data');
 end
 
 for i=1:T+1
     msg = strcat('x(s,t=',num2str(i),')');
-    plotGraph2(xData(:,i), xOptim(:,i), {0:T}, 's', msg, 'data', 'optimal', folder_to_save, 'Pop numbers In Optimal Solution (In Thousands) with Allee Vs Data');
+    plotGraph2(xData(:,i), xOptim(:,i), L+1, 's', msg, 'data', 'optimal', folder_to_save, 'Pop numbers In Optimal Solution (In Thousands) with Allee Vs Data');
 end
 
 for i=1:L+1
     msg = strcat('u(s=',num2str(i),',t)');
-    plotGraph2(fishMortalityData(i,:), uOptim(i,:), {0:L}, 't', msg, 'data', 'optimal', folder_to_save, 'Fish Mortality with Allee Vs Data Fish Mortality');
+    plotGraph2(fishMortalityData(i,:), uOptim(i,:), T+1, 't', msg, 'data', 'optimal', folder_to_save, 'Fish Mortality with Allee Vs Data Fish Mortality');
 end
 
 for i=1:T+1
     msg = strcat('u(s,t=',num2str(i),')');
-    plotGraph2(fishMortalityData(:,i), uOptim(:,i), {0:T}, 's', msg, 'data', 'optimal', folder_to_save, 'Fish Mortality with Allee Vs Data Fish Mortality');
+    plotGraph2(fishMortalityData(:,i), uOptim(:,i), L+1, 's', msg, 'data', 'optimal', folder_to_save, 'Fish Mortality with Allee Vs Data Fish Mortality');
 end
