@@ -87,6 +87,7 @@ function [ psi ] = reverseBoundary(xU, uK, L, rho)
         right = right .* (1 + N(i, uK)) + M(i, uK, rho);
     end
     P = phiDerivative(gamma*xU);
+    P(end) = 0;
     K = sum(gamma);
     A = K * P
     left = (1 + N(1, uK) - A);
@@ -97,9 +98,9 @@ function [ psi ] = reverseBoundary(xU, uK, L, rho)
 
     psi0 = left.\right;
     psi(1, t) = psi0;
-    int = sum(K*psi0);
+    int = sum(A.*psi0);
     for class=s(end-1:-1:2)
-        for time=t(class:end)
+        for time=t(class:end-1)
             psi(class, time) = MTime(class - 1, uK, rho, time - 1) + (1 + NTime(class, uK, time)).*psi(class - 1, time - 1) - int;
         end
     end
