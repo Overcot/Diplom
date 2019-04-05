@@ -20,7 +20,7 @@ global Ds Dt
         if (ssbCurr./ssbMax > allee)
             x0 = ssbCurr*exp(a-b*ssbCurr);
         else
-            x0 = ssbCurr*exp(a-b*ssbCurr)*exp(ssbCurr./ssbMax - allee)
+            x0 = ssbCurr*exp(a-b*ssbCurr)*exp(ssbCurr./ssbMax - allee);
         end
     end
 end

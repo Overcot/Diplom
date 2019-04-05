@@ -1,4 +1,4 @@
-function [xOptim, uOptim, JOptim] = searchForOptimalControl(xData, uData, x0Data, L, T)
+function [xOptim, uOptim, JOptim, storedJu] = searchForOptimalControl(xData, uData, x0Data, L, T)
     %% Optimal Control Parameters
     global Ds Dt s t;
 
@@ -7,58 +7,57 @@ function [xOptim, uOptim, JOptim] = searchForOptimalControl(xData, uData, x0Data
 
     eps = 0;
     uMax = 1;
-    uMin = 0.3;
+    uMin = 0.25;
 
-    JData = trapz(0:Dt:T, trapz(0:Ds:L, functionalInternal(rho, p, xData, uData)))
+    JData = sum(sum(functionalInternal(rho, p, xData, uData)))
     % for index = uMin:0.1:uMax
         index = uMin;
-        uK = 1 * ones(size(s,2),size(t,2));
+        uK = index * ones(size(s,2),size(t,2));
         k = 0;
         prev = 1;
         storedJu = [];
         storedPrev = [];
         uPrev = -1 * ones(size(s,2),size(t,2));
 
-        while (k < 10) %&& (prev > 10e-3)
+        while (k < 10000) %&& (prev > 10e-3)
             %% First Step
             % Pryamaya zadacha
             xU = Boundary(x0Data, uK);
     
             % Obratnaya
-            psi = reverseBoundary(xU, uK, L, rho);
-    
+            psi = reverseBoundary(xU, uK, L, T, rho);
+            
             % Derivatives of Functionals
             J_ = JDerivative(xU, psi, rho, p);
     
             beta = calculateStep(k, 1);
     
-            uK_ = projectionU(uK - beta * J_, uMin, uMax);
+            uK_ = projectionU(uK + beta * J_, uMin, uMax);
     
             %% Second step
             % Pryamaya zadacha
             xU = Boundary(x0Data, uK_);
     
             % Obratnaya
-            psi = reverseBoundary(xU, uK, L, rho);
+            psi = reverseBoundary(xU, uK_, L, T, rho);
     
             % Derivatives of Functionals
             J_ = JDerivative(xU, psi, rho, p);
     
             beta = calculateStep(k, 1);
     
-            uK = projectionU(uK_ - beta * J_, uMin, uMax);
+            uK = projectionU(uK_ + beta * J_, uMin, uMax);
 
             xU = Boundary(x0Data, uK);
     
             k
     
             % Ju = trapz(0:Dt:T, trapz(0:Ds:L, exp(-rho*t).*p.*uK(s, t).*xU(s, t)))
-            Ju = sum(sum(exp(-rho*t).*p.*uK(s, t).*xU(s, t)))
-            abs(Ju - JData)
+            Ju = sum(sum(functionalInternal(rho, p, xData, uData)));
             storedJu(end+1) = Ju;
             k = k+1;
     
-            prev = sum(sum((uK-uPrev).^2))
+            prev = sum(sum((uK-uPrev).^2));
             storedPrev(end+1) = prev;
             
             uPrev = uK;
@@ -66,8 +65,8 @@ function [xOptim, uOptim, JOptim] = searchForOptimalControl(xData, uData, x0Data
         uOptim = uPrev;
         xOptim = xU;
         JOptim = Ju;
-        storedJu
-        storedPrev
+        storedJu;
+        storedPrev;
     % end
 end
 
@@ -75,45 +74,55 @@ function [ J_ ] = JDerivative(x, psi, rho, p)
     global Ds Dt s t;
     global mu;
     % J' = -(1-mu) x * psi + delta'_u
-    J_ = - (1 - mu(s))' .* x(s, t) .* psi(s, t) + functionalInternalDerivativeU(rho, p, x)
+    J_ = - (1 - mu(s))' .* x(s, t) .* psi(s, t) + functionalInternalDerivativeU(rho, p, x);
 end
 
-function [ psi ] = reverseBoundary(xU, uK, L, rho)
+function [ psi ] = reverseBoundary(xU, uK, L, T, rho)
     global Ds Dt s t;
     global mu gamma;
     psi = zeros(size(s,2), size(t,2));
-    right = M(1, uK, rho);
-    for i=2:L
-        right = right .* (1 + N(i, uK)) + M(i, uK, rho);
-    end
-    P = phiDerivative(gamma*xU);
-    P(end) = 0;
-    K = sum(gamma);
-    A = K * P
-    left = (1 + N(1, uK) - A);
-    for i=2:L-1
-        left = (1 + N(i, uK)).*left - A;
-    end
-    left = A - (1 + N(L, uK)).*left;
+    left = zeros((size(s,2) - 1)*(size(t,2) - 1));
+    right = zeros((size(s,2) - 1)*(size(t,2) - 1), 1);
 
-    psi0 = left.\right;
-    psi(1, t) = psi0;
-    int = sum(A.*psi0);
-    for class=s(end-1:-1:2)
-        for time=t(class:end-1)
-            psi(class, time) = MTime(class - 1, uK, rho, time - 1) + (1 + NTime(class, uK, time)).*psi(class - 1, time - 1) - int;
+    K = sum(gamma);
+    P = phiDerivative(gamma*xU);
+    KPHI = K * P(1:end-1);
+    for time=t(1:end-1)
+        left(:,time) = KPHI(time);
+    end
+
+    for class=s(1:end-1)
+        for time=t(1:end-1)
+            % (class-1)*(size(t,2)-1) + time
+
+            left((class-1)*(size(t,2)-1) + time, (class-1)*(size(t,2)-1) + time) = left((class-1)*(size(t,2)-1) + time, (class-1)*(size(t,2)-1) + time) - (1+NTime(class, uK, time));
+
+            right((class-1)*(size(t,2)-1) + time) = MTime(class, uK, rho, time);
         end
     end
-    psi
+
+    matrixOnes = diag(ones(size(t,2)-2, 1), 1);
+    for index=1:L-1 
+        left((index-1)*T+1:index*T,index*T+1:(index+1)*T) = matrixOnes;
+    end
+    
+    X = left\right;
+
+    for class=s(1:end-1)
+        for time=t(1:end-1)
+            (class-1)*(size(t,2)-1) + time;
+            psi(class, time)=X((class-1)*(size(t,2) - 1) + time);
+        end
+    end
 end
 
 function value = M(i, u, rho)
     global s t;
-    value = -exp(-rho*t).*u(i, t)
+    value = -exp(-rho*t).*u(i, t);
 end
 
 function value = MTime(i, u, rho, time)
-    value = -exp(-rho*time).*u(i, time)
+    value = -exp(-rho*time).*u(i, time);
 end
 
 function value = N(i, u)
@@ -123,7 +132,7 @@ function value = N(i, u)
 end
 function value = NTime(i, u, time)
     global mu;
-    value = mu(i)+(1 - mu(i)).*u(i, time)
+    value = mu(i)+(1 - mu(i)).*u(i, time);
 end
 function [ nu_x ] = rightSideDerivativeX(u)
     global s t;
@@ -177,11 +186,6 @@ function [ u ] = projectionU(u, uMin, uMax)
  end
 
  function beta = calculateStep(k, JDerivative)
-     global Ds Dt;
-    %  beta = k * (Ds^2 + Dt^2)/norm(JDerivative);
-    %  if beta < 0.1
-    %      beta = 0.1;
-    %  end
-    beta = 0.1;
+    beta = 0.0000001;
  end
  

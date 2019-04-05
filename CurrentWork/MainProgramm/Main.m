@@ -55,7 +55,7 @@ xAlleeZero = Boundary(x0, u);
 %     plotGraph2(xData(:,i), x(:,i), L+1, 's', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
 % end
 
-[xOptim, uOptim, JOptim] = searchForOptimalControl(xData, fishMortalityData, x0Data, L, T);
+[xOptim, uOptim, JOptim, storedJu] = searchForOptimalControl(xData, fishMortalityData, x0Data, L, T);
 rho = 0.3;
 p = 1;
 JData = sum(sum(exp(-rho*t).*p.*fishMortalityData(s, t).*xData(s, t)))
@@ -83,3 +83,5 @@ for i=1:T+1
     msg = strcat('u(s,t=',num2str(i),')');
     plotGraph2(fishMortalityData(:,i), uOptim(:,i), L+1, 's', msg, 'data', 'optimal', folder_to_save, 'Fish Mortality with Allee Vs Data Fish Mortality');
 end
+
+plotGraph(storedJu(:), {0:size(storedJu, 2)}, 'index', 'Ju(index)','Functional', folder_to_save);

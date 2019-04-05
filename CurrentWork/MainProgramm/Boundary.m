@@ -17,5 +17,12 @@ function [ x ] = Boundary(x0, u)
         class = s(end) - 1;
         lastClass = s(end);
         x(s(end), time + 1) = Dt*(-mu(class) * x(class, time) - u(class, time) * (1 - mu(class)) * x(class, time) + x(class, time)/Dt) + Dt*(-mu(lastClass) * x(lastClass, time) - u(lastClass, time) * (1 - mu(lastClass)) * x(lastClass, time) + x(lastClass, time)/Dt);
-    end    
+    end
+    for time=t(1:end)
+        for class=s(1:end)
+            if x(class, time) < 10e-3
+                x(class, time) = 0;
+            end
+        end
+    end
 end

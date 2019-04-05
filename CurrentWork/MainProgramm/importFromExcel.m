@@ -18,7 +18,7 @@ function [xData, x0Data, ssbData, ssbMax, fishMortalityData, gammaData, muData, 
 
         gammaDataRange = strcat('A2:F2');
         [~, ~, gammaData] = xlsread(excelFileName, 5, gammaDataRange);
-        gammaData = str2double(gammaData)
+        gammaData = str2double(gammaData);
         
         x0Data = xData(:,1);
         ssbMax = max(ssbData)
