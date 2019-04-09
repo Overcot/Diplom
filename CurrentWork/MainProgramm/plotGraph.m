@@ -3,7 +3,7 @@ function [] = plotGraph(numerical, xFromTo, xmsg, ymsg, legendMsg, dir)
     hold on;
     plot(numerical,'--')
     legend({legendMsg});
-    set(gca, 'XtickLabel', xFromTo);
+    xlim([1 xFromTo])
     xlabel(xmsg)
     ylabel(ymsg)
     hold off;
