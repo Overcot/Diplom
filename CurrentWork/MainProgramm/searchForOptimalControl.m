@@ -11,15 +11,15 @@ function [xOptim, uOptim, JOptim, storedJu] = searchForOptimalControl(xData, uDa
 
     JData = sum(sum(functionalInternal(rho, p, xData, uData)))
     % for index = uMin:0.1:uMax
-        index = uMin;
-        uK = index * ones(size(s,2),size(t,2));
+        index = uMax;
+        uK = 0.5 * ones(size(s,2),size(t,2));
         k = 0;
         prev = 1;
         storedJu = [];
         storedPrev = [];
         uPrev = -1 * ones(size(s,2),size(t,2));
 
-        while (k < 10000) %&& (prev > 10e-3)
+        while (k < 1000) %&& (prev > 10e-3)
             %% First Step
             % Pryamaya zadacha
             xU = Boundary(x0Data, uK);
@@ -30,7 +30,7 @@ function [xOptim, uOptim, JOptim, storedJu] = searchForOptimalControl(xData, uDa
             % Derivatives of Functionals
             J_ = JDerivative(xU, psi, rho, p);
     
-            beta = calculateStep(k, 1);
+            beta = calculateStep(k, J_);
     
             uK_ = projectionU(uK + beta * J_, uMin, uMax);
     
@@ -44,16 +44,16 @@ function [xOptim, uOptim, JOptim, storedJu] = searchForOptimalControl(xData, uDa
             % Derivatives of Functionals
             J_ = JDerivative(xU, psi, rho, p);
     
-            beta = calculateStep(k, 1);
+            beta = calculateStep(k, J_);
     
-            uK = projectionU(uK_ + beta * J_, uMin, uMax);
+            uK = projectionU(uK + beta * J_, uMin, uMax);
 
             xU = Boundary(x0Data, uK);
     
             k
     
             % Ju = trapz(0:Dt:T, trapz(0:Ds:L, exp(-rho*t).*p.*uK(s, t).*xU(s, t)))
-            Ju = sum(sum(functionalInternal(rho, p, xData, uData)));
+            Ju = sum(sum(functionalInternal(rho, p, xU, uK)))
             storedJu(end+1) = Ju;
             k = k+1;
     
@@ -93,11 +93,10 @@ function [ psi ] = reverseBoundary(xU, uK, L, T, rho)
 
     for class=s(1:end-1)
         for time=t(1:end-1)
-            % (class-1)*(size(t,2)-1) + time
+            i = (class-1)*(size(t,2)-1) + time;
+            left(i, i) = left(i, i) - (1+NTime(class, uK, time));
 
-            left((class-1)*(size(t,2)-1) + time, (class-1)*(size(t,2)-1) + time) = left((class-1)*(size(t,2)-1) + time, (class-1)*(size(t,2)-1) + time) - (1+NTime(class, uK, time));
-
-            right((class-1)*(size(t,2)-1) + time) = MTime(class, uK, rho, time);
+            right(i) = MTime(class, uK, rho, time);
         end
     end
 
@@ -106,7 +105,7 @@ function [ psi ] = reverseBoundary(xU, uK, L, T, rho)
         left((index-1)*T+1:index*T,index*T+1:(index+1)*T) = matrixOnes;
     end
     
-    X = left\right;
+    X = mldivide(left, right);
 
     for class=s(1:end-1)
         for time=t(1:end-1)
@@ -146,19 +145,19 @@ function [ nu_u ] = rightSideDerivativeU(x)
     nu_u = - (1 - mu(s)) .* x(s, t)
 end
 
-function [ Jmatrix ] = functionalInternal(rho, p, xData, uData)
+function [ Jmatrix ] = functionalInternal(rho, p, x, u)
     global s t;
-    Jmatrix = exp(-rho*t).*p.*uData(s, t).*xData(s, t);
+    Jmatrix = exp(-rho*t).*p.*u(s, t).*x(s, t);
 end
 
-function [ ans ] = functionalInternalDerivativeX(rho, p, uData)
+function [ ans ] = functionalInternalDerivativeX(rho, p, u)
     global s t;
-    ans = exp(-rho*t).*p.*uData(s, t);
+    ans = exp(-rho*t).*p.*u(s, t);
 end
 
-function [ ans ] = functionalInternalDerivativeU(rho, p, xData)
+function [ ans ] = functionalInternalDerivativeU(rho, p, x)
     global s t;
-    ans = exp(-rho*t).*p.*xData(s, t);
+    ans = exp(-rho*t).*p.*x(s, t);
 end
 
 function [ phi_ ] = phiDerivative(ksi)
@@ -186,6 +185,6 @@ function [ u ] = projectionU(u, uMin, uMax)
  end
 
  function beta = calculateStep(k, JDerivative)
-    beta = 0.0000001;
+    beta = 1/norm(JDerivative);
  end
  

@@ -24,8 +24,6 @@ x = Boundary(x0, u);
 allee = 0
 xAlleeZero = Boundary(x0, u);
 
-
-
 % folder_to_save = 'WithAndWithoutAllee';
 % if ~exist(folder_to_save, 'dir')
 %     mkdir(folder_to_save)
@@ -58,12 +56,13 @@ xAlleeZero = Boundary(x0, u);
 [xOptim, uOptim, JOptim, storedJu] = searchForOptimalControl(xData, fishMortalityData, x0Data, L, T);
 rho = 0.3;
 p = 1;
-JData = sum(sum(exp(-rho*t).*p.*fishMortalityData(s, t).*xData(s, t)))
+x = Boundary(x0Data, fishMortalityData);
+JData = sum(sum(exp(-rho*t).*p.*fishMortalityData(s, t).*x(s, t)))
 folder_to_save = 'OptimalSolution';
 if ~exist(folder_to_save, 'dir')
     mkdir(folder_to_save)
 end
-
+%{
 for i=1:L+1
     msg = strcat('x(s=',num2str(i),',t)');
     plotGraph2(xData(i,:), xOptim(i,:), T+1, 't', msg, 'data', 'optimal', folder_to_save, 'Pop numbers In Optimal Solution (In Thousands) with Allee Vs Data');
@@ -83,5 +82,5 @@ for i=1:T+1
     msg = strcat('u(s,t=',num2str(i),')');
     plotGraph2(fishMortalityData(:,i), uOptim(:,i), L+1, 's', msg, 'data', 'optimal', folder_to_save, 'Fish Mortality with Allee Vs Data Fish Mortality');
 end
-
+%}
 plotGraph(storedJu(:), {0:size(storedJu, 2)}, 'index', 'Ju(index)','Functional', folder_to_save);
