@@ -21,8 +21,9 @@ ourStartingYear = 1964
 
 x = Boundary(x0, u);
 
-allee = 0
-xAlleeZero = Boundary(x0, u);
+% allee = 0
+% xAlleeZero = Boundary(x0, u);
+% plotGraph(1-mu(:), size(mu, 2), 'возраст', 'Выживамость','Выживамость', '');
 
 % folder_to_save = 'WithAndWithoutAllee';
 % if ~exist(folder_to_save, 'dir')
@@ -52,12 +53,16 @@ xAlleeZero = Boundary(x0, u);
 %     msg = strcat('x(s,t=',num2str(i),')');
 %     plotGraph2(xData(:,i), x(:,i), L+1, 's', msg, 'data', 'numerical', folder_to_save, 'Pop numbers (In Thousands) with Allee Vs Data');
 % end
+x = Boundary(x0Data, fishMortalityData);
 
-[xOptim, uOptim, JOptim, storedJu] = searchForOptimalControl(xData, fishMortalityData, x0Data, L, T);
+[xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u] = searchForOptimalControl(xData, fishMortalityData, x0Data, L, T);
 rho = 0.3;
 p = 1;
 x = Boundary(x0Data, fishMortalityData);
-JData = sum(sum(exp(-rho*(t-1)).*p.*fishMortalityData(s, t).*x(s, t)))
+
+J1Data = sum(sum(exp(-rho*(t-1)).*p.*fishMortalityData(s, t).*x(s, t)))
+J2Data = sum(sum(fishMortalityData.^2))
+
 folder_to_save = 'OptimalSolution';
 if ~exist(folder_to_save, 'dir')
     mkdir(folder_to_save)
@@ -83,4 +88,5 @@ for i=1:T+1
     plotGraph2(fishMortalityData(:,i), uOptim(:,i), L+1, 's', msg, 'data', 'optimal', folder_to_save, 'Fish Mortality with Allee Vs Data Fish Mortality');
 end
 
-plotGraph(storedJu(:), size(storedJu, 2), 'index', 'Ju(index)','Functional', folder_to_save);
+plotGraph(storedJ1u(:), size(storedJ1u, 2), 'index', 'J1u(index)','Functional', folder_to_save);
+plotGraph(storedJ2u(:), size(storedJ2u, 2), 'index', 'J2u(index)','Functional', folder_to_save);
