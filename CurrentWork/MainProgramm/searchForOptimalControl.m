@@ -1,4 +1,4 @@
-function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u] = searchForOptimalControl(xData, uData, x0Data, L, T)
+function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL] = searchForOptimalControl(xData, uData, x0Data, L, T)
     %% Optimal Control Parameters
     global Ds Dt s t;
     global ssbMax allee;
@@ -7,7 +7,7 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u] = searchForOpt
 
     eps = 0;
     uMax = 1;
-    uMin = 0.35;
+    uMin = 0.3;
 
     lambdaMin = 0;
     % for index = uMin:0.1:uMax
@@ -22,10 +22,11 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u] = searchForOpt
         storedJ1u = [];
         storedJ2u = [];
         storedPrev = [];
+        storedL = [];
         uPrev = -1 * ones(size(s,2),size(t,2));
         lambda1 = 1;
         lambda2 = 1-lambda1;
-        while (k < 2000) %&& (prev > 10e-3)
+        while (k < 2000000) %&& (prev > 10e-3)
             %% First Step
             % Pryamaya zadacha
             xU = Boundary(x0Data, uK);
@@ -66,17 +67,19 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u] = searchForOpt
     
             k
     
-            J1u = sum(sum(functionalInternal(rho, p, xU, uK)))
-            J2u = sum(sum(uK.^2))
+            J1u = sum(sum(functionalInternal(rho, p, xU, uK)));
+            J2u = sum(sum(uK.^2));
 
             storedJ1u(end+1) = J1u;
             storedJ2u(end+1) = J2u;
-
+            
             k = k+1;
     
             prev = sum(sum((uK - uPrev).^2));
             storedPrev(end+1) = prev;
             
+            storedL(end+1) = J1u + sum(lambdaK.*lambdaDerivative(xU));
+
             uPrev = uK;
         end
         uOptim = uPrev;
@@ -87,6 +90,7 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u] = searchForOpt
         storedJ1u;
         storedJ2u;
         storedPrev;
+        storedL;
     % end
 end
 
@@ -261,7 +265,7 @@ function lambda = projectionLambda(lambda, lambdaMin)
 end
 
  function beta = calculateStep(k, JDerivative)
-    beta = 0.01*1/norm(JDerivative);
-    % beta =0.1;
+    % beta = 10*1/norm(JDerivative);
+    beta = 1;
  end
  
