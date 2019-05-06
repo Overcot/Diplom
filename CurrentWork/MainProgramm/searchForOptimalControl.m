@@ -80,10 +80,9 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
             lambdaK = projectionLambda(lambdaK_ + beta2*lambdaDer_, lambdaMin);
 
             xU = Boundary(x0Data, uK);
-    
             k
     
-            J1u = sum(sum(functionalInternal(rho, p, xU, uK)));
+            J1u = sum(sum(functionalInternal(rho, p, xU, uK)))
             J2u = sum(sum(uK.^2));
 
             storedJ1u(end+1) = J1u;
@@ -93,8 +92,8 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     
             prev = sum(sum((uK - uPrev).^2));
             storedPrev(end+1) = prev;
-            J1u + sum(lambdaK.*lambdaDerivative(xU))
-            storedL(end+1) = J1u + sum(lambdaK.*lambdaDerivative(xU));
+            lastL = J1u + sum(lambdaK.*lambdaDerivative(xU))
+            storedL(end+1) = lastL;
             
             storedLambda(:,end+1) = lambdaK';
 
@@ -181,7 +180,7 @@ function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
             i = (class-1)*(size(t,2)-1) + time;
             left(i, i) = left(i, i) + 1;
 
-            right(i) = - MTime(class+1, uK, rho, time+1) - lambda(time).*gamma(class);
+            right(i) = - MTime(class+1, uK, rho, time+1) + lambda(time).*gamma(class);
         end
     end
     
@@ -284,6 +283,6 @@ end
 
  function beta = calculateStep(k, JDerivative)
     % beta = 10*1/norm(JDerivative);
-    beta = 0.000001;
+    beta = 10^-9;
  end
  
