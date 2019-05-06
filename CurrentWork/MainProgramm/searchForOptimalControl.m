@@ -6,7 +6,7 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     p = 1;
 
     eps = 0;
-    uMax = 1;
+    uMax = 0.8;
     uMin = 0.3;
 
     lambdaMin = 0;
@@ -57,8 +57,8 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
             lambdaDer = lambdaDerivative(xU);
 
             beta = calculateStep(k, J1_);
-            beta2 = 100;
-            uK_ = projectionU(uK - beta * (lambda1 * J1_+ lambda2 * J2_) , uMin, uMax);
+            beta2 = 10^-6;
+            uK_ = projectionU(uK - beta * (lambda1 * J1_+ lambda2 * J2_), uMin, uMax);
             lambdaK_ = projectionLambda(lambdaK + beta2*lambdaDer, lambdaMin);
 
             %% Second step
@@ -93,7 +93,7 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     
             prev = sum(sum((uK - uPrev).^2));
             storedPrev(end+1) = prev;
-            J1u + sum(lambdaK.*lambdaDerivative(xU));
+            J1u + sum(lambdaK.*lambdaDerivative(xU))
             storedL(end+1) = J1u + sum(lambdaK.*lambdaDerivative(xU));
             
             storedLambda(:,end+1) = lambdaK';
@@ -284,6 +284,6 @@ end
 
  function beta = calculateStep(k, JDerivative)
     % beta = 10*1/norm(JDerivative);
-    beta = 1000;
+    beta = 0.000001;
  end
  

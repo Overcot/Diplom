@@ -67,15 +67,15 @@ else
     storedK = 1;
     storedPrev = [];
 end
-addPoints = 10000;
+addPoints = 1000;
 [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, storedLambda, storedK, storedPrev] = searchForOptimalControl(addPoints, xData, fishMortalityData, x0Data, L, T, xOptim, uOptim, storedJ1u, storedJ2u, storedL, storedLambda, storedK, storedPrev);
 save('results.mat', 'xOptim','uOptim','storedJ1u','storedJ2u','storedL','storedLambda','storedK', 'storedPrev')
 rho = 0.3;
 p = 1;
 x = Boundary(x0Data, fishMortalityData);
-
-J1Data = sum(sum(exp(-rho*(t-1)).*p.*fishMortalityData(s, t).*x(s, t)))
-J2Data = sum(sum(fishMortalityData.^2))
+storedL(end)
+J1Data = sum(sum(exp(-rho*(t-1)).*p.*fishMortalityData(s, t).*x(s, t)));
+J2Data = sum(sum(fishMortalityData.^2));
 %{
 folder_to_save = 'OptimalSolution';
 if ~exist(folder_to_save, 'dir')
