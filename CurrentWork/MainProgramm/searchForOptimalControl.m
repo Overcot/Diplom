@@ -1,4 +1,4 @@
-function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL] = searchForOptimalControl(xData, uData, x0Data, L, T)
+function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, storedLambda, k, storedPrev] = searchForOptimalControl(add, xData, uData, x0Data, L, T, xOptim, uOptim, storedJ1u, storedJ2u, storedL, storedLambda, storedK, storedPrev)
     %% Optimal Control Parameters
     global Ds Dt s t;
     global ssbMax allee;
@@ -12,21 +12,37 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL] = sea
     lambdaMin = 0;
     % for index = uMin:0.1:uMax
         index = uMax;
-        uK = (uMin + uMax)/2 * ones(size(s,2),size(t,2));
-        uK(:,1) = 0;
-
-        lambdaK = zeros(1, size(t,2));
-
-        k = 1;
+        if isempty(uOptim)
+            uK = (uMin + uMax)/2 * ones(size(s,2),size(t,2));
+            uK(:,1) = 0;
+        else
+            uK = uOptim;
+        end
+        
+        if ~isempty(xOptim)
+            xU = xOptim;
+        end
+        
+        if isempty(storedLambda)
+            lambdaK = zeros(1, size(t,2));
+        else
+            lambdaK = storedLambda(:,end)';
+        end
+        
+        
+        
+        
+        k = storedK;
         prev = 1;
-        storedJ1u = [];
-        storedJ2u = [];
-        storedPrev = [];
-        storedL = [];
+        storedJ1u = storedJ1u;
+        storedJ2u = storedJ2u;
+        storedPrev = storedPrev;
+        storedL = storedL;
+        storedLambda = storedLambda;
         uPrev = -1 * ones(size(s,2),size(t,2));
         lambda1 = 1;
         lambda2 = 1-lambda1;
-        while (k < 2000000) %&& (prev > 10e-3)
+        while (k < add + storedK) %&& (prev > 10e-3)
             %% First Step
             % Pryamaya zadacha
             xU = Boundary(x0Data, uK);
@@ -41,9 +57,9 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL] = sea
             lambdaDer = lambdaDerivative(xU);
 
             beta = calculateStep(k, J1_);
-    
-            uK_ = projectionU(uK + beta * (lambda1 * J1_+ lambda2 * J2_) , uMin, uMax);
-            lambdaK_ = projectionLambda(lambdaK + lambdaDer, lambdaMin);
+            beta2 = 100;
+            uK_ = projectionU(uK - beta * (lambda1 * J1_+ lambda2 * J2_) , uMin, uMax);
+            lambdaK_ = projectionLambda(lambdaK + beta2*lambdaDer, lambdaMin);
 
             %% Second step
             % Pryamaya zadacha
@@ -60,8 +76,8 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL] = sea
 
             beta_ = calculateStep(k, J1__);
     
-            uK = projectionU(uK + beta_ * (lambda1 * J1__+lambda2 * J2__), uMin, uMax);
-            lambdaK = projectionLambda(lambdaK_ + lambdaDer_, lambdaMin);
+            uK = projectionU(uK - beta_ * (lambda1 * J1__+lambda2 * J2__), uMin, uMax);
+            lambdaK = projectionLambda(lambdaK_ + beta2*lambdaDer_, lambdaMin);
 
             xU = Boundary(x0Data, uK);
     
@@ -77,15 +93,17 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL] = sea
     
             prev = sum(sum((uK - uPrev).^2));
             storedPrev(end+1) = prev;
-            
+            J1u + sum(lambdaK.*lambdaDerivative(xU));
             storedL(end+1) = J1u + sum(lambdaK.*lambdaDerivative(xU));
+            
+            storedLambda(:,end+1) = lambdaK';
 
             uPrev = uK;
         end
         uOptim = uPrev;
         xOptim = xU;
-        J1Optim = J1u;
-        J2Optim = J2u;
+        J1Optim = storedJ1u(end);
+        J2Optim = storedJ2u(end);
 
         storedJ1u;
         storedJ2u;
@@ -266,6 +284,6 @@ end
 
  function beta = calculateStep(k, JDerivative)
     % beta = 10*1/norm(JDerivative);
-    beta = 1;
+    beta = 1000;
  end
  

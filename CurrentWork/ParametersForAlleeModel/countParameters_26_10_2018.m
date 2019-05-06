@@ -33,26 +33,36 @@ beq = [];
 
 rng default % For reproducibility
 ms = MultiStart('FunctionTolerance',2e-6,'UseParallel',true);
-gs = GlobalSearch(ms, 'NumTrialPoints', 1e7);
-
+gs = GlobalSearch(ms, 'NumTrialPoints', 1e6);
+%{
 problem = createOptimProblem('fmincon','x0',[0,0,0],...
     'objective',@AnnaModel,'lb',[-10,-10,0],'ub',[10,10,1]);
 [x,resnorm] = run(gs,problem);
 
-params1 = [8.244595391 8.58578E-07 0.2]
+params1 = x
 J1 = AnnaModel(params1)
-
-params2 = [8.635711156	2.64626E-06 0.54595332]
+%}
+problem = createOptimProblem('fmincon','x0',[0,0,0.05],...
+    'objective',@AnnaModel,'lb',[-3,-3,0],'ub',[3,3,0.1]);
+[x,resnorm2] = run(gs,problem);
+params2 = x
 J2 = AnnaModel(params2)
 
+problem = createOptimProblem('fmincon','x0',[0,0,0.1],...
+    'objective',@AnnaModel,'lb',[-3,-3,0],'ub',[3,3,0.2]);
+[x,resnorm3] = run(gs,problem);
 params3 = x
 J3 = AnnaModel(params3)
 
-problem = createOptimProblem('fmincon','x0',[0,0,0],...
-    'objective',@AnnaModel,'lb',[-10,-10,0],'ub',[10,10,0.3]);
-[x,resnorm] = run(gs,problem);
+problem = createOptimProblem('fmincon','x0',[0,0,0.15],...
+    'objective',@AnnaModel,'lb',[-3,-3,0],'ub',[3,3,0.3]);
+[x,resnorm4] = run(gs,problem);
 params4 = x
 J4 = AnnaModel(params4)
+
+
+
+
 
 %{
 for leftABorder=-10000000:100000:0
