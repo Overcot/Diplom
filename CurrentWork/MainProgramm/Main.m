@@ -67,7 +67,7 @@ else
     storedK = 1;
     storedPrev = [];
 end
-addPoints = 15000;
+addPoints = 10000;
 [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, storedLambda, storedK, storedPrev] = searchForOptimalControl(addPoints, xData, fishMortalityData, x0Data, L, T, xOptim, uOptim, storedJ1u, storedJ2u, storedL, storedLambda, storedK, storedPrev);
 save('results.mat', 'xOptim','uOptim','storedJ1u','storedJ2u','storedL','storedLambda','storedK', 'storedPrev')
 rho = 0.3;
@@ -107,7 +107,8 @@ for i=1:T+1
     plotGraph(storedLambda(i,:), size(storedLambda, 2), 'index', name, 'lambda', folder_to_save);
 end
 
-plotGraph(gamma*xOptim, size(t,2), 't', 'SSB(t)','SSB(t)', folder_to_save);
+% plotGraph(gamma*xOptim, size(t,2), 't', 'SSB(t)','SSB(t)', folder_to_save);
+plotGraph2(allee*ssbMax*ones(1,size(t,2)), gamma*xOptim, size(t, 2), 't', 'SSB(t)','a(t)', 'SSB(t)', folder_to_save, 'Соблюдение фазового ограничения')
 plotGraph(storedJ1u(:), size(storedJ1u, 2), 'index', 'J1u(index)','Functional', folder_to_save);
 plotGraph(storedJ2u(:), size(storedJ2u, 2), 'index', 'J2u(index)','Functional', folder_to_save);
 plotGraph(storedL(:), size(storedL, 2), 'index', 'L(u, lambda)', 'Свертка', folder_to_save);

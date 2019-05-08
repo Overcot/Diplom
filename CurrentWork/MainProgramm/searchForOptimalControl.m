@@ -29,9 +29,6 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
             lambdaK = storedLambda(:,end)';
         end
         
-        
-        
-        
         k = storedK;
         prev = 1;
         storedJ1u = storedJ1u;
@@ -40,8 +37,6 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
         storedL = storedL;
         storedLambda = storedLambda;
         uPrev = -1 * ones(size(s,2),size(t,2));
-        lambda1 = 1;
-        lambda2 = 1-lambda1;
         while (k < add + storedK) %&& (prev > 10e-3)
             %% First Step
             % Pryamaya zadacha
@@ -52,14 +47,16 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
             
             % Derivatives of Functionals
             J1_ = JDerivative(xU, psi, rho, p);
-            J2_ = -2*uK;
 
             lambdaDer = lambdaDerivative(xU);
 
+            % Calculate steps
             beta = calculateStep(k, J1_);
-            beta2 = 10^-6;
-            uK_ = projectionU(uK - beta * (lambda1 * J1_+ lambda2 * J2_), uMin, uMax);
-            lambdaK_ = projectionLambda(lambdaK + beta2*lambdaDer, lambdaMin);
+            alpha = 10^-6;
+
+            % Prognoznii step
+            uK_ = projectionU(uK - beta * J1_, uMin, uMax);
+            lambdaK_ = projectionLambda(lambdaK + alpha*lambdaDer, lambdaMin);
 
             %% Second step
             % Pryamaya zadacha
@@ -70,19 +67,21 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     
             % Derivatives of Functionals
             J1__ = JDerivative(xU_, psi_, rho, p);
-            J2__ = -2*uK_;
 
             lambdaDer_ = lambdaDerivative(xU_);
 
             beta_ = calculateStep(k, J1__);
-    
-            uK = projectionU(uK - beta_ * (lambda1 * J1__+lambda2 * J2__), uMin, uMax);
-            lambdaK = projectionLambda(lambdaK_ + beta2*lambdaDer_, lambdaMin);
+
+            % Main step
+            uK = projectionU(uK - beta_ * J1__, uMin, uMax);
+            lambdaK = projectionLambda(lambdaK + alpha*lambdaDer_, lambdaMin);
+
 
             xU = Boundary(x0Data, uK);
             k
-    
-            J1u = sum(sum(functionalInternal(rho, p, xU, uK)))
+            
+            gU = sum(sum(functionalInternal(rho, p, xU, uK)));
+            J1u = sum(sum(-functionalInternal(rho, p, xU, uK)))
             J2u = sum(sum(uK.^2));
 
             storedJ1u(end+1) = J1u;
@@ -92,7 +91,7 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     
             prev = sum(sum((uK - uPrev).^2));
             storedPrev(end+1) = prev;
-            lastL = J1u + sum(lambdaK.*lambdaDerivative(xU))
+            lastL = gU + sum(lambdaK.*lambdaDerivative(xU))
             storedL(end+1) = lastL;
             
             storedLambda(:,end+1) = lambdaK';
@@ -115,7 +114,7 @@ function [ J_ ] = JDerivative(x, psi, rho, p)
     global Ds Dt s t;
     global mu;
     % J' = -(1-mu) x * psi + delta'_u
-    J_ = - (1 - mu(s))' .* x(s, t) .* psi(s, t) + functionalInternalDerivativeU(rho, p, x);
+    J_ = rightSideDerivativeU(x) .* psi(s, t) + functionalInternalDerivativeU(rho, p, x);
 end
 
 function [ lambdaDerivative ] = lambdaDerivative(x)
@@ -124,43 +123,6 @@ function [ lambdaDerivative ] = lambdaDerivative(x)
     lambdaDerivative = allee*ssbMax - gamma(s)*x(s, t);
 end
 
-% function [ psi ] = reverseBoundary(xU, uK, L, T, rho)
-%     global Ds Dt s t;
-%     global mu gamma;
-%     psi = zeros(size(s,2), size(t,2));
-%     left = zeros((size(s,2) - 1)*(size(t,2) - 1));
-%     right = zeros((size(s,2) - 1)*(size(t,2) - 1), 1);
-
-%     K = sum(gamma);
-%     P = phiDerivative(gamma*xU);
-%     KPHI = K * P(1:end-1);
-%     for time=t(1:end-1)
-%         left(:,time) = KPHI(time);
-%     end
-
-%     for class=s(1:end-1)
-%         for time=t(1:end-1)
-%             i = (class-1)*(size(t,2)-1) + time;
-%             left(i, i) = left(i, i) - (1+NTime(class, uK, time));
-
-%             right(i) = MTime(class, uK, rho, time);
-%         end
-%     end
-
-%     matrixOnes = diag(ones(size(t,2)-2, 1), 1);
-%     for index=1:L-1 
-%         left((index-1)*T+1:index*T,index*T+1:(index+1)*T) = matrixOnes;
-%     end
-    
-%     X = mldivide(left, right);
-
-%     for class=s(1:end-1)
-%         for time=t(1:end-1)
-%             (class-1)*(size(t,2)-1) + time;
-%             psi(class, time)=X((class-1)*(size(t,2) - 1) + time);
-%         end
-%     end
-% end
 function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
     global Ds Dt s t;
     global mu gamma;
@@ -180,7 +142,7 @@ function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
             i = (class-1)*(size(t,2)-1) + time;
             left(i, i) = left(i, i) + 1;
 
-            right(i) = - MTime(class+1, uK, rho, time+1) + lambda(time).*gamma(class);
+            right(i) = MTime(class+1, uK, rho, time+1) - lambda(time+1).*gamma(class+1);
         end
     end
     
@@ -213,39 +175,39 @@ end
 function value = N(i, u)
     global s t;
     global mu;
-    value = mu(i)+(1 - mu(i)).*u(i, t);
+    value = mu(i)+(1 - mu(i)).*u(i, t) - 1;
 end
 
 function value = NTime(i, u, time)
     global mu;
-    value = mu(i)+(1 - mu(i)).*u(i, time);
+    value = mu(i)+(1 - mu(i)).*u(i, time) - 1;
 end
 
 function [ nu_x ] = rightSideDerivativeX(u)
     global s t;
     global mu;
-    nu_x = - mu(s) - (1 - mu(s)).*u(s, t)
+    nu_x = - mu(s) - (1 - mu(s)).*u(s, t);
 end
 
 function [ nu_u ] = rightSideDerivativeU(x)
     global s t;
     global mu;
-    nu_u = - (1 - mu(s)) .* x(s, t)
+    nu_u = - (1 - mu(s)) * x(s, t);
 end
 
 function [ Jmatrix ] = functionalInternal(rho, p, x, u)
     global s t;
-    Jmatrix = exp(-rho*(t-1)).*p.*u(s, t).*x(s, t);
+    Jmatrix = -exp(-rho*(t-1)).*p.*u(s, t).*x(s, t);
 end
 
 function [ ans ] = functionalInternalDerivativeX(rho, p, u)
     global s t;
-    ans = exp(-rho*(t-1)).*p.*u(s, t);
+    ans = -exp(-rho*(t-1)).*p.*u(s, t);
 end
 
 function [ ans ] = functionalInternalDerivativeU(rho, p, x)
     global s t;
-    ans = exp(-rho*(t-1)).*p.*x(s, t);
+    ans = -exp(-rho*(t-1)).*p.*x(s, t);
 end
 
 function [ phi_ ] = phiDerivative(ksi)
