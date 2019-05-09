@@ -103,7 +103,7 @@ for i=1:T+1
 end
 
 for i=1:T+1
-    name = strcat('lambda(',num2str(i),')');
+    name = strcat('lambda(t=',num2str(i),')');
     plotGraph(storedLambda(i,:), size(storedLambda, 2), 'index', name, 'lambda', folder_to_save);
 end
 
