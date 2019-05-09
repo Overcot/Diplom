@@ -10,117 +10,113 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     uMin = 0.3;
 
     lambdaMin = 0;
-    % for index = uMin:0.1:uMax
-        index = uMax;
-        if isempty(uOptim)
-            uK = (uMin + uMax)/2 * ones(size(s,2),size(t,2));
-            uK(:,1) = 0;
-        else
-            uK = uOptim;
-        end
+    if isempty(uOptim)
+        uK = (uMin + uMax)/2 * ones(size(s,2),size(t,2));
+        uK(:,1) = 0;
+    else
+        uK = uOptim;
+    end
+    
+    if ~isempty(xOptim)
+        xU = xOptim;
+    end
+    
+    if isempty(storedLambda)
+        lambdaK = zeros(1, size(t,2));
+    else
+        lambdaK = storedLambda(:,end)';
+    end
+    
+    k = storedK;
+    prev = 1;
+    storedJ1u = storedJ1u;
+    storedJ2u = storedJ2u;
+    storedPrev = storedPrev;
+    storedL = storedL;
+    storedLambda = storedLambda;
+    uPrev = -1 * ones(size(s,2),size(t,2));
+    while (k < add + storedK) %&& (prev > 10e-3)
+        %% First Step
+        % Pryamaya zadacha
+        xU = Boundary(x0Data, uK);
+
+        % Obratnaya
+        psi = reverseBoundary(xU, uK, L, T, rho, lambdaK);
         
-        if ~isempty(xOptim)
-            xU = xOptim;
-        end
+        % Derivatives of svertka
+        L_u = LDerivativeU(xU, psi, rho, p);
+
+        L_lambda = LDerivativeLambda(xU);
+
+        % Calculate steps
+        beta = calculateStep(k, L_u);
+        alpha = 10^-6;
+
+        % Prognoznii step
+        uK_ = projectionU(uK - beta * L_u, uMin, uMax);
+        lambdaK_ = projectionLambda(lambdaK + alpha*L_lambda, lambdaMin);
+
+        %% Second step
+        % Pryamaya zadacha
+        xU_ = Boundary(x0Data, uK_);
+
+        % Obratnaya
+        psi_ = reverseBoundary(xU_, uK_, L, T, rho, lambdaK_);
+
+        % Derivatives of svertka
+        L_u_ = LDerivativeU(xU_, psi_, rho, p);
+
+        L_lambda_ = LDerivativeLambda(xU_);
+
+        beta_ = calculateStep(k, L_u_);
+
+        % Main step
+        uK = projectionU(uK - beta_ * L_u_, uMin, uMax);
+        lambdaK = projectionLambda(lambdaK + alpha*L_lambda_, lambdaMin);
+
+        xU = Boundary(x0Data, uK);
+        k
         
-        if isempty(storedLambda)
-            lambdaK = zeros(1, size(t,2));
-        else
-            lambdaK = storedLambda(:,end)';
-        end
+        gU = sum(sum(delta(rho, p, xU, uK)));
+        J1u = sum(sum(-delta(rho, p, xU, uK)))
+        J2u = sum(sum(uK.^2));
+
+        storedJ1u(end+1) = J1u;
+        storedJ2u(end+1) = J2u;
         
-        k = storedK;
-        prev = 1;
-        storedJ1u = storedJ1u;
-        storedJ2u = storedJ2u;
-        storedPrev = storedPrev;
-        storedL = storedL;
-        storedLambda = storedLambda;
-        uPrev = -1 * ones(size(s,2),size(t,2));
-        while (k < add + storedK) %&& (prev > 10e-3)
-            %% First Step
-            % Pryamaya zadacha
-            xU = Boundary(x0Data, uK);
-    
-            % Obratnaya
-            psi = reverseBoundary(xU, uK, L, T, rho, lambdaK);
-            
-            % Derivatives of Functionals
-            J1_ = JDerivative(xU, psi, rho, p);
+        k = k+1;
 
-            lambdaDer = lambdaDerivative(xU);
+        prev = sum(sum((uK - uPrev).^2));
+        storedPrev(end+1) = prev;
+        lastL = gU + sum(lambdaK.*LDerivativeLambda(xU))
+        storedL(end+1) = lastL;
+        
+        storedLambda(:,end+1) = lambdaK';
 
-            % Calculate steps
-            beta = calculateStep(k, J1_);
-            alpha = 10^-6;
+        uPrev = uK;
+    end
+    uOptim = uPrev;
+    xOptim = xU;
+    J1Optim = storedJ1u(end);
+    J2Optim = storedJ2u(end);
 
-            % Prognoznii step
-            uK_ = projectionU(uK - beta * J1_, uMin, uMax);
-            lambdaK_ = projectionLambda(lambdaK + alpha*lambdaDer, lambdaMin);
-
-            %% Second step
-            % Pryamaya zadacha
-            xU_ = Boundary(x0Data, uK_);
-    
-            % Obratnaya
-            psi_ = reverseBoundary(xU_, uK_, L, T, rho, lambdaK_);
-    
-            % Derivatives of Functionals
-            J1__ = JDerivative(xU_, psi_, rho, p);
-
-            lambdaDer_ = lambdaDerivative(xU_);
-
-            beta_ = calculateStep(k, J1__);
-
-            % Main step
-            uK = projectionU(uK - beta_ * J1__, uMin, uMax);
-            lambdaK = projectionLambda(lambdaK + alpha*lambdaDer_, lambdaMin);
-
-
-            xU = Boundary(x0Data, uK);
-            k
-            
-            gU = sum(sum(functionalInternal(rho, p, xU, uK)));
-            J1u = sum(sum(-functionalInternal(rho, p, xU, uK)))
-            J2u = sum(sum(uK.^2));
-
-            storedJ1u(end+1) = J1u;
-            storedJ2u(end+1) = J2u;
-            
-            k = k+1;
-    
-            prev = sum(sum((uK - uPrev).^2));
-            storedPrev(end+1) = prev;
-            lastL = gU + sum(lambdaK.*lambdaDerivative(xU))
-            storedL(end+1) = lastL;
-            
-            storedLambda(:,end+1) = lambdaK';
-
-            uPrev = uK;
-        end
-        uOptim = uPrev;
-        xOptim = xU;
-        J1Optim = storedJ1u(end);
-        J2Optim = storedJ2u(end);
-
-        storedJ1u;
-        storedJ2u;
-        storedPrev;
-        storedL;
-    % end
+    storedJ1u;
+    storedJ2u;
+    storedPrev;
+    storedL;
 end
 
-function [ J_ ] = JDerivative(x, psi, rho, p)
+function [ L_u ] = LDerivativeU(x, psi, rho, p)
     global Ds Dt s t;
     global mu;
     % J' = -(1-mu) x * psi + delta'_u
-    J_ = rightSideDerivativeU(x) .* psi(s, t) + functionalInternalDerivativeU(rho, p, x);
+    L_u = nuDerivativeU(x) .* psi(s, t) + deltaDerivativeU(rho, p, x);
 end
 
-function [ lambdaDerivative ] = lambdaDerivative(x)
+function [ L_lambda ] = LDerivativeLambda(x)
     global s t;
     global gamma ssbMax allee;
-    lambdaDerivative = allee*ssbMax - gamma(s)*x(s, t);
+    L_lambda = allee*ssbMax - gamma(s)*x(s, t);
 end
 
 function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
@@ -163,51 +159,57 @@ function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
     end
 end
 
-function value = M(i, u, rho)
+function [value] = M(i, u, rho)
     global s t;
-    value = -exp(-rho*(t-1)).*u(i, t);
+    value = - exp(-rho*(t-1)).*u(i, t);
 end
 
-function value = MTime(i, u, rho, time)
-    value = -exp(-rho*(time-1)).*u(i, time);
+function [value] = MTime(i, u, rho, time)
+    value = - exp(-rho*(time-1)).*u(i, time);
 end
 
-function value = N(i, u)
+function [value] = N(i, u)
     global s t;
     global mu;
     value = mu(i)+(1 - mu(i)).*u(i, t) - 1;
 end
 
-function value = NTime(i, u, time)
+function [value] = NTime(i, u, time)
     global mu;
     value = mu(i)+(1 - mu(i)).*u(i, time) - 1;
 end
 
-function [ nu_x ] = rightSideDerivativeX(u)
+function [ nu ] = nu(x, u)
+    global s t;
+    global mu;
+    nu = - mu(s) * x(s, t) - u(s, t) * (1 - mu(s)) * x(s, t);
+end
+
+function [ nu_x ] = nuDerivativeX(u)
     global s t;
     global mu;
     nu_x = - mu(s) - (1 - mu(s)).*u(s, t);
 end
 
-function [ nu_u ] = rightSideDerivativeU(x)
+function [ nu_u ] = nuDerivativeU(x)
     global s t;
     global mu;
     nu_u = - (1 - mu(s)) * x(s, t);
 end
 
-function [ Jmatrix ] = functionalInternal(rho, p, x, u)
+function [ delta ] = delta(rho, p, x, u)
     global s t;
-    Jmatrix = -exp(-rho*(t-1)).*p.*u(s, t).*x(s, t);
+    delta = -exp(-rho*(t-1)).*p.*u(s, t).*x(s, t);
 end
 
-function [ ans ] = functionalInternalDerivativeX(rho, p, u)
+function [ deltaDerivativeX ] = deltaDerivativeX(rho, p, u)
     global s t;
-    ans = -exp(-rho*(t-1)).*p.*u(s, t);
+    deltaDerivativeX = -exp(-rho*(t-1)).*p.*u(s, t);
 end
 
-function [ ans ] = functionalInternalDerivativeU(rho, p, x)
+function [ deltaDerivativeU ] = deltaDerivativeU(rho, p, x)
     global s t;
-    ans = -exp(-rho*(t-1)).*p.*x(s, t);
+    deltaDerivativeU = -exp(-rho*(t-1)).*p.*x(s, t);
 end
 
 function [ phi_ ] = phiDerivative(ksi)
