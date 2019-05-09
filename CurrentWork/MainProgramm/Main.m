@@ -67,7 +67,7 @@ else
     storedK = 1;
     storedPrev = [];
 end
-addPoints = 15000;
+addPoints = 23000;
 [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, storedLambda, storedK, storedPrev] = searchForOptimalControl(addPoints, xData, fishMortalityData, x0Data, L, T, xOptim, uOptim, storedJ1u, storedJ2u, storedL, storedLambda, storedK, storedPrev);
 save('results.mat', 'xOptim','uOptim','storedJ1u','storedJ2u','storedL','storedLambda','storedK', 'storedPrev')
 rho = 0.3;
