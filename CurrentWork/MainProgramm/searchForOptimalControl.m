@@ -6,7 +6,7 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     p = 1;
 
     eps = 0;
-    uMax = 0.8;
+    uMax = 1;
     uMin = 0.3;
 
     lambdaMin = 0;
@@ -119,6 +119,46 @@ function [ L_lambda ] = LDerivativeLambda(x)
     L_lambda = allee*ssbMax - gamma(s)*x(s, t);
 end
 
+% function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
+%     global Ds Dt s t;
+%     global mu gamma;
+%     psi = zeros(size(s,2), size(t,2));
+%     left = zeros((size(s,2) - 1)*(size(t,2) - 1));
+%     right = zeros((size(s,2) - 1)*(size(t,2) - 1), 1);
+
+%     K = sum(gamma);
+%     P = phiDerivative(gamma*xU);
+%     KPHI = K * P(1:end-1);
+%     for time=t(1:end-1)
+%         left(:,time) = - KPHI(time);
+%     end
+
+%     for class=s(1:end-1)
+%         for time=t(1:end-1)
+%             i = (class-1)*(size(t,2)-1) + time;
+%             left(i, i) = left(i, i) + 1;
+
+%             right(i) = MTime(class+1, uK, rho, time+1) - lambda(time+1).*gamma(class+1);
+%         end
+%     end
+    
+%     for index=1:L-1 
+%         matrixOnes = diag(ones(size(t,2)-2, 1), 1);
+%         for time=t(1:end-2)
+%             matrixOnes(time, time+1) = NTime(index, uK, time);
+%         end
+%         left((index-1)*T+1:index*T,index*T+1:(index+1)*T) = matrixOnes;
+%     end
+%     X = mldivide(left, right);
+
+%     for class=s(1:end-1)
+%         for time=t(1:end-1)
+%             (class-1)*(size(t,2)-1) + time;
+%             psi(class, time)=X((class-1)*(size(t,2) - 1) + time);
+%         end
+%     end
+% end
+
 function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
     global Ds Dt s t;
     global mu gamma;
@@ -126,19 +166,22 @@ function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
     left = zeros((size(s,2) - 1)*(size(t,2) - 1));
     right = zeros((size(s,2) - 1)*(size(t,2) - 1), 1);
 
-    K = sum(gamma);
-    P = phiDerivative(gamma*xU);
-    KPHI = K * P(1:end-1);
-    for time=t(1:end-1)
-        left(:,time) = - KPHI(time);
+    phi_ = phiDerivative(gamma*xU);
+
+    for class=s(1:end-1)
+        tmpmatrix = zeros(size(t,2)-1, size(t,2)-1);
+        for time=t(1:end-2)
+            tmpmatrix(time, time+1) = -phi_(time+1)*gamma(class+1);
+        end
+        left((class-1)*T+1:class*T,1:T) = tmpmatrix;
     end
 
     for class=s(1:end-1)
         for time=t(1:end-1)
             i = (class-1)*(size(t,2)-1) + time;
-            left(i, i) = left(i, i) + 1;
+            left(i, i) = left(i, i) + 1; % construct ones on main diagonal
 
-            right(i) = MTime(class+1, uK, rho, time+1) - lambda(time+1).*gamma(class+1);
+            right(i) = MTime(class+1, uK, rho, time+1) - lambda(time+1).*gamma(class+1); % construct matrix B
         end
     end
     
@@ -149,12 +192,13 @@ function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
         end
         left((index-1)*T+1:index*T,index*T+1:(index+1)*T) = matrixOnes;
     end
-    X = mldivide(left, right);
 
+
+    P = mldivide(left, right); % solve matrix equation
     for class=s(1:end-1)
         for time=t(1:end-1)
-            (class-1)*(size(t,2)-1) + time;
-            psi(class, time)=X((class-1)*(size(t,2) - 1) + time);
+            (class-1)*(size(t,2)-1) + time; % assign according to work
+            psi(class, time)=P((class-1)*(size(t,2) - 1) + time);
         end
     end
 end
