@@ -35,6 +35,8 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     storedL = storedL;
     storedLambda = storedLambda;
     uPrev = -1 * ones(size(s,2),size(t,2));
+    regularizeParameter = 0.1;
+
     while (k < add + storedK) %&& (prev > 10e-3)
         %% First Step
         % Pryamaya zadacha
@@ -44,9 +46,9 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
         psi = reverseBoundary(xU, uK, L, T, rho, lambdaK);
         
         % Derivatives of svertka
-        L_u = LDerivativeU(xU, psi, rho, p);
+        L_u = LDerivativeU(xU, psi, rho, p, regularizeParameter, uK);
 
-        L_lambda = LDerivativeLambda(xU);
+        L_lambda = LDerivativeLambda(xU, regularizeParameter, lambdaK);
 
         % Calculate steps
         beta = calculateStep(k, L_u);
@@ -64,9 +66,9 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
         psi_ = reverseBoundary(xU_, uK_, L, T, rho, lambdaK_);
 
         % Derivatives of svertka
-        L_u_ = LDerivativeU(xU_, psi_, rho, p);
+        L_u_ = LDerivativeU(xU_, psi_, rho, p, regularizeParameter, uK_);
 
-        L_lambda_ = LDerivativeLambda(xU_);
+        L_lambda_ = LDerivativeLambda(xU_, regularizeParameter, lambdaK_);
 
         beta_ = calculateStep(k, L_u_);
 
@@ -88,7 +90,7 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
 
         prev = sum(sum((uK - uPrev).^2));
         storedPrev(end+1) = prev;
-        lastL = gU + sum(lambdaK.*LDerivativeLambda(xU))
+        lastL = gU + sum(lambdaK.*LDerivativeLambda(xU, regularizeParameter, lambdaK)) + regularizeParameter * (norma(uK)^2 - norma(lambdaK)^2)
         storedL(end+1) = lastL;
         
         storedLambda(:,end+1) = lambdaK';
@@ -106,17 +108,17 @@ function [xOptim, uOptim, J1Optim, J2Optim, storedJ1u, storedJ2u, storedL, store
     storedL;
 end
 
-function [ L_u ] = LDerivativeU(x, psi, rho, p)
+function [ L_u ] = LDerivativeU(x, psi, rho, p, regularizeParameter, u)
     global Ds Dt s t;
     global mu;
     % J' = -(1-mu) x * psi + delta'_u
-    L_u = nuDerivativeU(x) .* psi(s, t) + deltaDerivativeU(rho, p, x);
+    L_u = nuDerivativeU(x) .* psi(s, t) + deltaDerivativeU(rho, p, x) + 2 * regularizeParameter * u;
 end
 
-function [ L_lambda ] = LDerivativeLambda(x)
+function [ L_lambda ] = LDerivativeLambda(x, regularizeParameter, lambda)
     global s t;
     global gamma ssbMax allee;
-    L_lambda = allee*ssbMax - gamma(s)*x(s, t);
+    L_lambda = allee*ssbMax - gamma(s)*x(s, t) - 2 * regularizeParameter * lambda;
 end
 
 % function [ psi ] = reverseBoundary(xU, uK, L, T, rho, lambda)
@@ -265,6 +267,10 @@ function [ phi_ ] = phiDerivative(ksi)
     else
         phi_ = exp(ksi./ssbMax - allee) .* exp(a-b.*ksi) .* (1 - b.*ksi - ksi./ssbMax);
     end
+end
+
+function [ res ] = norma(val)
+    res = sqrt(sum(sum(val.^2)));
 end
 
 function [ u ] = projectionU(u, uMin, uMax)
